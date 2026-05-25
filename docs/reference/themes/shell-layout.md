@@ -2,28 +2,7 @@
 
 Supervisor’s shell has distinct regions. Themes can style any region via CSS; a subset also accepts JSON overrides.
 
-## Layout diagram
-
-```
-┌──────────────────────────────────────────────────────────────┬────┐
-│ shell.titlebar          [downloads popup] [settings] [─ □ ×]   │    │
-├──────────┬───────────────────────────────────────────────────┤ c  │
-│          │                                                   │ o  │
-│ shell.   │  Main content (mods, downloads, settings)         │ m  │
-│ sidebar  │                                                   │ p  │
-│          │                                                   │ a  │
-│          │                                                   │ c  │
-│          │                                                   │ t  │
-│          │                                                   │    │
-│          │                                                   │ b  │
-│          │                                                   │ a  │
-│          │                                                   │ r  │
-├──────────┴───────────────────────────────────────────────────┤    │
-│ shell.statusbar                                              │    │
-└──────────────────────────────────────────────────────────────┴────┘
-```
-
-The **compact game bar** (`shell.compactBar`) is optional and sits on the **far right** of the shell — it never replaces the main sidebar.
+The **compact game bar** (`shell.compactBar`) is optional and sits on the **far right** of the shell, it never replaces the main sidebar.
 
 ## Slot reference
 
