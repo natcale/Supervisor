@@ -70,6 +70,8 @@ Themes use the `.svtheme` format
 
 An **Example** reference theme for authors lives at `themes/packages/example/` See [docs/reference/themes/](docs/reference/themes/README.md).
 
+You can find themes in our [Discord](https://discord.gg/ZGuu9TJzAe)
+
 ## Resources
 
 - [Documentation](docs/README.md) — User guides, reference, and contributing docs
