@@ -1,0 +1,71 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Supervisor",
+  "version": "0.1.0-beta",
+  "identifier": "com.supervisor.app",
+  "build": {
+    "frontendDist": "../out",
+    "devUrl": "http://localhost:3000",
+    "beforeDevCommand": "bun run dev",
+    "beforeBuildCommand": "bun run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Supervisor",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 960,
+        "minHeight": 640,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": false,
+        "visible": false
+      },
+      {
+        "label": "onboarding",
+        "title": "Supervisor",
+        "url": "/onboarding",
+        "width": 520,
+        "height": 520,
+        "minWidth": 520,
+        "minHeight": 520,
+        "maxWidth": 520,
+        "maxHeight": 520,
+        "resizable": false,
+        "fullscreen": false,
+        "decorations": false,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' asset: https: data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data: blob:; connect-src 'self' https: ipc: http://localhost:* ws://localhost:*"
+    }
+  },
+  "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": [
+          "nxm"
+        ]
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis"
+    ],
+    "resources": {
+      "../themes/bundled/": "themes/bundled"
+    },
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

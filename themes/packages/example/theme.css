@@ -1,0 +1,70 @@
+/**
+ * Example theme — theme.css
+ *
+ * Full-app reskinning: target stable data-theme-slot hooks and CSS variables.
+ * Nothing here is active until you uncomment a rule block.
+ *
+ * Slot reference (see docs/reference/themes/):
+ *   shell.titlebar, shell.sidebar, shell.compactBar, shell.statusbar, shell.downloadPopup
+ *   view.mods.empty, view.downloads.empty, view.collections.vortex
+ */
+
+/* ── Title bar (drag region + window controls) ───────────────────────────── */
+/*
+[data-theme-slot="shell.titlebar"] {
+  background: linear-gradient(180deg, #2d3748, #1a202c);
+  border-bottom: 1px solid var(--border);
+}
+.titlebar-control.close:hover {
+  background: #e81123 !important;
+}
+*/
+
+/* ── Main navigation sidebar ─────────────────────────────────────────────── */
+/*
+[data-theme-slot="shell.sidebar"] {
+  background: #111827;
+  border-right: 1px solid var(--border);
+}
+[data-theme-slot="shell.sidebar"] button {
+  border-radius: var(--radius-md);
+}
+*/
+
+/* ── Compact game icon bar ─────────────────────────────────────────────────── */
+/*
+[data-theme-slot="shell.compactBar"] {
+  background: #0b0f14;
+  border-right: 1px solid var(--border);
+}
+[data-theme-slot="shell.compactBar"] button {
+  transition: border-radius 120ms ease;
+}
+*/
+
+/* ── Download popup (titlebar + compact bar triggers) ────────────────────── */
+/*
+[data-theme-slot="shell.downloadPopup"] {
+  backdrop-filter: blur(12px);
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 45%);
+}
+*/
+
+/* ── Status bar ──────────────────────────────────────────────────────────── */
+/*
+[data-theme-slot="shell.statusbar"] {
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+*/
+
+/* ── Content panels & mod table (global selectors — use carefully) ───────── */
+/*
+.bg-content-panel {
+  border-top-left-radius: var(--radius-lg);
+}
+*/
+
+/* ── Hide regions via layout JSON instead of CSS when possible ───────────── */
+/* Prefer layouts/shell.json slot fields (width, hidden, enabled, itemOrder). */

@@ -1,0 +1,56 @@
+[package]
+name = "supervisor"
+version = "0.1.0-beta"
+description = "Cross-game mod manager and launcher"
+authors = ["Supervisor"]
+license = "MIT"
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+name = "supervisor_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.6.2", features = [] }
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+log = "0.4"
+thiserror = "2.0"
+url = "2.5"
+uuid = { version = "1.18", features = ["v4"] }
+sha2 = "0.10"
+base64 = "0.22"
+reqwest = { version = "0.12", features = ["json", "rustls-tls", "stream"], default-features = false }
+keyring = { version = "3.6", features = ["apple-native", "windows-native", "linux-native"] }
+tokio = { version = "1", features = ["fs", "io-util", "rt", "time"] }
+futures-util = "0.3"
+tauri = { version = "2.11.2", features = ["devtools"] }
+tauri-plugin-log = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-deep-link = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-store = "2"
+tauri-plugin-process = "2"
+zip = "2"
+sevenz-rust = "0.6"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = "2"
+
+[target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
+tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55"
+webview2-com = "0.38"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

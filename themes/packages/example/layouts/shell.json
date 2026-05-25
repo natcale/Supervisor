@@ -1,0 +1,19 @@
+{
+  "slots": {
+    "shell.compactBar": {
+      "enabled": true
+    },
+    "shell.sidebar": {
+      "width": 300,
+      "density": "default"
+    },
+    "view.mods.empty": {
+      "align": "center",
+      "showWalkthrough": true
+    },
+    "view.downloads.empty": {
+      "align": "center",
+      "showWalkthrough": true
+    }
+  }
+}

@@ -1,0 +1,190 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release-windows:
+    name: Build ${{ matrix.arch }}
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-pc-windows-msvc
+            arch: x64
+          - target: aarch64-pc-windows-msvc
+            arch: arm64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Resolve release title
+        id: release_meta
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          TITLE="${TAG/-beta/ Beta}"
+          echo "title=$TITLE" >> "$GITHUB_OUTPUT"
+
+      - name: Build and publish GitHub Release
+        id: tauri
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: ${{ steps.release_meta.outputs.title }}
+          releaseBody: |
+            ## Windows only
+
+            Supervisor is **supported on Windows only** at this time.
+
+            ### Install (recommended)
+
+            Download **`Supervisor_*_${{ matrix.arch }}-setup.exe`** and run the installer.
+
+            ### Portable
+
+            Download **`Supervisor_${{ matrix.arch }}-portable.zip`**, extract anywhere, and run `supervisor.exe`.
+
+            ### Notes
+
+            - Windows SmartScreen may warn on first run because the installer is not Authenticode-signed. Choose **More info → Run anyway**.
+            - Auto-updates are signed with Tauri update keys (not Authenticode).
+            - Staging and your game install must be on the same drive for hardlink deploy.
+          releaseDraft: false
+          prerelease: true
+          args: --target ${{ matrix.target }} --bundles nsis
+
+      - name: Create portable ZIP
+        shell: pwsh
+        run: |
+          $releaseDir = "src-tauri/target/${{ matrix.target }}/release"
+          if (-not (Test-Path "$releaseDir/supervisor.exe")) {
+            throw "Release binary not found at $releaseDir/supervisor.exe"
+          }
+          $staging = "$env:RUNNER_TEMP/supervisor-portable-${{ matrix.arch }}"
+          if (Test-Path $staging) { Remove-Item $staging -Recurse -Force }
+          New-Item -ItemType Directory -Path $staging -Force | Out-Null
+          Copy-Item "$releaseDir/supervisor.exe" $staging
+          if (Test-Path "$releaseDir/resources") {
+            Copy-Item "$releaseDir/resources" "$staging/resources" -Recurse
+          }
+          Get-ChildItem $releaseDir -Filter "*.dll" -File | ForEach-Object {
+            Copy-Item $_.FullName $staging
+          }
+          $zipName = "Supervisor_${{ matrix.arch }}-portable.zip"
+          Compress-Archive -Path "$staging/*" -DestinationPath $zipName -Force
+          echo "PORTABLE_ZIP=$zipName" >> $env:GITHUB_ENV
+
+      - name: Upload portable ZIP to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: ${{ env.PORTABLE_ZIP }}
+
+      - name: Prepare updater platform metadata
+        shell: pwsh
+        run: |
+          $bundleDir = "src-tauri/target/${{ matrix.target }}/release/bundle/nsis"
+          $sig = Get-ChildItem $bundleDir -Filter "*_${{ matrix.arch }}-setup.exe.sig" | Select-Object -First 1
+          $exe = Get-ChildItem $bundleDir -Filter "*_${{ matrix.arch }}-setup.exe" | Select-Object -First 1
+          if (-not $sig -or -not $exe) {
+            throw "Updater artifacts not found in $bundleDir"
+          }
+          $platform = if ("${{ matrix.arch }}" -eq "x64") { "windows-x86_64" } else { "windows-aarch64" }
+          $url = "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/$($exe.Name)"
+          $payload = [ordered]@{
+            platform  = $platform
+            signature = (Get-Content $sig.FullName -Raw).Trim()
+            url       = $url
+          }
+          New-Item -ItemType Directory -Force -Path updater-meta | Out-Null
+          $payload | ConvertTo-Json | Set-Content updater-meta/platform.json -Encoding utf8
+
+      - name: Upload updater metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: updater-${{ matrix.arch }}
+          path: updater-meta/platform.json
+
+  latest-json:
+    name: Publish latest.json
+    needs: release-windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download updater metadata
+        uses: actions/download-artifact@v4
+        with:
+          pattern: updater-*
+          path: updater-meta
+          merge-multiple: true
+
+      - name: Build latest.json
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          TAG="${GITHUB_REF_NAME#v}"
+          TITLE="${TAG/-beta/ Beta}"
+          NOTES="${TITLE} — see release notes on GitHub."
+          export VERSION PUB_DATE NOTES
+          python3 <<'PY'
+          import json, glob, os, sys
+          platforms = {}
+          for path in glob.glob("updater-meta/**/platform.json", recursive=True):
+              with open(path, encoding="utf-8") as f:
+                  entry = json.load(f)
+              platform = entry.pop("platform")
+              platforms[platform] = entry
+          if not platforms:
+              print("No updater platforms found in workflow artifacts", file=sys.stderr)
+              sys.exit(1)
+          payload = {
+              "version": os.environ["VERSION"],
+              "notes": os.environ["NOTES"],
+              "pub_date": os.environ["PUB_DATE"],
+              "platforms": platforms,
+          }
+          with open("latest.json", "w", encoding="utf-8") as f:
+              json.dump(payload, f, indent=2)
+          print(json.dumps(payload, indent=2))
+          PY
+
+      - name: Upload latest.json
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: latest.json
+          overwrite_files: true

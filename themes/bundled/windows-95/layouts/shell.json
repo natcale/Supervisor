@@ -1,0 +1,10 @@
+{
+  "slots": {
+    "shell.sidebar": {
+      "density": "compact",
+      "width": 220
+    },
+    "shell.titlebar": {},
+    "shell.statusbar": {}
+  }
+}

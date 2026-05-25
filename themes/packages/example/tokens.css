@@ -1,0 +1,33 @@
+/**
+ * Example theme — tokens.css
+ *
+ * Override CSS custom properties to recolor the entire app. Uncomment blocks to experiment.
+ * All variables below mirror app/globals.css. Themes load after the base stylesheet,
+ * so :root assignments here win without touching React components.
+ */
+
+/* :root {
+  --background: #0f1419;
+  --foreground: #e2e8f0;
+  --panel: #151b23;
+  --panel-secondary: #1c2430;
+  --content-panel: #121820;
+  --sidebar: #0d1117;
+  --titlebar: #0d1117;
+  --statusbar: #0d1117;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #6e7681;
+  --border: #30363d;
+  --primary: #58a6ff;
+  --primary-hover: #79b8ff;
+  --accent: #1f6feb;
+  --error: #f85149;
+  --success: #3fb950;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --nav-width: 280px;
+  --font-ui: "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Cascadia Code", "JetBrains Mono", monospace;
+} */

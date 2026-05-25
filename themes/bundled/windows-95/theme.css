@@ -1,0 +1,134 @@
+[data-theme-slot="shell.titlebar"] {
+  background: linear-gradient(90deg, #000080, #1084d0);
+  color: #ffffff;
+  border-bottom: 2px solid #000000;
+}
+
+[data-theme-slot="shell.titlebar"] .text-text-secondary {
+  color: #ffffff;
+}
+
+[data-theme-slot="shell.titlebar"] .titlebar-control {
+  color: #000000;
+  background: #c0c0c0;
+  border-left: 1px solid #ffffff;
+  border-top: 1px solid #ffffff;
+  border-right: 1px solid #000000;
+  border-bottom: 1px solid #000000;
+  margin-top: 2px;
+  margin-right: 2px;
+  height: calc(100% - 4px);
+  width: 42px;
+}
+
+[data-theme-slot="shell.titlebar"] .titlebar-control.close:hover {
+  background: #cc0000;
+  color: #ffffff;
+}
+
+[data-theme-slot="shell.sidebar"],
+[data-theme-slot="shell.statusbar"],
+.bg-panel-secondary,
+.bg-content-panel,
+.bg-panel,
+.bg-sidebar {
+  border-color: #808080;
+}
+
+button,
+input,
+select,
+[role="dialog"] > div {
+  border-radius: 0 !important;
+}
+
+/* Tailwind corner utilities (main shell uses rounded-tl-xl / rounded-bl-xl) */
+.rounded,
+.rounded-sm,
+.rounded-md,
+.rounded-lg,
+.rounded-xl,
+.rounded-2xl,
+.rounded-tl-xl,
+.rounded-tr-xl,
+.rounded-bl-xl,
+.rounded-br-xl,
+.rounded-tl-lg,
+.rounded-tr-lg,
+.rounded-bl-lg,
+.rounded-br-lg,
+.bg-content-panel {
+  border-radius: 0 !important;
+}
+
+button:not(.titlebar-control):not([class*="rounded-full"]) {
+  border: 2px solid;
+  border-color: #ffffff #000000 #000000 #ffffff;
+  box-shadow: none;
+}
+
+button:not(.titlebar-control):active {
+  border-color: #000000 #ffffff #ffffff #000000;
+}
+
+[data-theme-slot="shell.statusbar"] {
+  border-top: 2px solid #ffffff;
+  box-shadow: inset 0 1px 0 #dfdfdf;
+  color: #000000;
+}
+
+/* Win95: black body text; white only on titlebar + green enabled toggles */
+.text-text-primary,
+.text-text-secondary,
+.text-text-muted,
+.text-text-disabled,
+.text-text-active {
+  color: var(--text-primary);
+}
+
+.text-text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+.text-text-muted {
+  color: var(--text-muted) !important;
+}
+
+.text-white {
+  color: #000000 !important;
+}
+
+[data-theme-slot="shell.titlebar"] .text-white,
+[data-theme-slot="shell.titlebar"] .text-text-secondary,
+.bg-mod-enabled,
+.bg-mod-enabled.text-white,
+button.bg-mod-enabled {
+  color: #ffffff !important;
+}
+
+.titlebar-control.close:hover {
+  color: #ffffff !important;
+}
+
+.bg-toolbar {
+  background-color: #c0c0c0 !important;
+  color: #000000 !important;
+}
+
+.bg-toolbar button {
+  color: #000000 !important;
+  border-color: #808080 !important;
+}
+
+.bg-toolbar button:hover {
+  background-color: #dfdfdf !important;
+}
+
+.bg-primary {
+  background-color: #c0c0c0 !important;
+}
+
+.bg-accent.text-white {
+  background-color: #c0c0c0 !important;
+  color: #000000 !important;
+}

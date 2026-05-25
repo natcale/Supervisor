@@ -1,0 +1,13 @@
+id: example
+name: Example (documentation theme)
+author: Supervisor
+description: >
+  Reference theme for authors. Does not change the default appearance when installed.
+  Contains commented CSS patterns showing how to restyle the full app with custom CSS.
+apiVersion: 1
+minSupervisorVersion: "0.1.0"
+css:
+  - tokens.css
+  - theme.css
+layouts:
+  - layouts/shell.json

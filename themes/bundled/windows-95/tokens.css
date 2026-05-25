@@ -1,0 +1,70 @@
+:root {
+  --background: #008080;
+  --foreground: #000000;
+
+  --panel: #c0c0c0;
+  --panel-secondary: #dfdfdf;
+  --content-panel: #c0c0c0;
+  --card: #c0c0c0;
+  --panel-active: #000080;
+  --panel-hover: #00008022;
+
+  --titlebar: #000080;
+  --sidebar: #c0c0c0;
+  --editor-secondary: #c0c0c0;
+  --statusbar: #c0c0c0;
+  --statusbar-fg: #000000;
+
+  --text-primary: #000000;
+  --text-secondary: #222222;
+  --text-muted: #444444;
+  --text-disabled: #808080;
+  --text-active: #000000;
+
+  --border: #000000;
+  --border-subtle: #808080;
+  --border-focus: #000080;
+
+  --accent: #000080;
+  --accent-hover: #1084d0;
+  --accent-fg: #000000;
+
+  --error: #cc0000;
+  --warning: #808000;
+  --success: #008000;
+  --info: #000080;
+
+  --input-bg: #ffffff;
+  --input-border: #808080;
+  --input-placeholder: #808080;
+
+  --button-bg: #c0c0c0;
+  --button-fg: #000000;
+  --button-hover: #dfdfdf;
+  --button-secondary-bg: #c0c0c0;
+  --button-secondary-fg: #000000;
+  --button-secondary-hover: #dfdfdf;
+
+  --scrollbar: #c0c0c0;
+  --scrollbar-hover: #a0a0a0;
+
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+
+  --font-ui: "Tahoma", "MS Sans Serif", "Segoe UI", sans-serif;
+  --font-mono: "Fixedsys", "Courier New", monospace;
+
+  --primary: #c0c0c0;
+  --primary-hover: #dfdfdf;
+  --toolbar-bg: #c0c0c0;
+  --mod-enabled: #008000;
+  --mod-enabled-hover: #006600;
+  --table-header: #c0c0c0;
+  --table-row-hover: #00008022;
+
+  --nav-width: 220px;
+
+  --transition-fast: 0ms;
+  --transition-base: 0ms;
+}

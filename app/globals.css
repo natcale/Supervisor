@@ -1,0 +1,313 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Supervisor contributors. All rights reserved.
+ *  Licensed under the MIT License. See LICENSE in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+@import "tailwindcss";
+
+:root {
+  --background: #181818;
+  --foreground: #d4d4d4;
+
+  --panel: #181818;
+  --panel-secondary: #272727;
+  --content-panel: #1f1f1f;
+  --card: #1f1f1f;
+  --panel-active: #ffffff2a;
+  --panel-hover: #ffffff1f;
+
+  --titlebar: #181818;
+  --sidebar: #181818;
+  --editor-secondary: #2b2b2b;
+  --statusbar: #181818;
+  --statusbar-fg: #ffffff;
+
+  --text-primary: #d4d4d4;
+  --text-secondary: #9d9d9d;
+  --text-muted: #6b6b6b;
+  --text-disabled: #4a4a4a;
+  --text-active: #ffffff;
+
+  --border: #ffffff10;
+  --border-subtle: #ffffff10;
+  --border-focus: #007acc;
+
+  --accent: #0052cc;
+  --accent-hover: #1a8ad4;
+  --accent-fg: #ffffff;
+
+  --error: #f44747;
+  --warning: #cca700;
+  --success: #4ec9b0;
+  --info: #4a9eff;
+
+  --input-bg: #3c3c3c;
+  --input-border: #3c3c3c;
+  --input-placeholder: #6b6b6b;
+
+  --button-bg: #0044ff;
+  --button-fg: #ffffff;
+  --button-hover: #2c4bff;
+  --button-secondary-bg: #3c3c3d;
+  --button-secondary-fg: #d4d4d4;
+  --button-secondary-hover: #45494e;
+
+  --scrollbar: #424242;
+  --scrollbar-hover: #555555;
+
+  --radius-sm: 1px;
+  --radius-md: 3px;
+  --radius-lg: 6px;
+
+  --font-ui: "Geist", system-ui, sans-serif;
+  --font-mono: "Lilex", "JetBrains Mono", monospace;
+
+  --text-xs: 0.85rem;
+  --text-sm: 0.90rem;
+  --text-base: 0.95rem;
+  --text-md: 1rem;
+  --text-lg: 1.1rem;
+
+  --transition-fast: 70ms ease;
+  --transition-base: 70ms ease;
+
+  --z-dropdown: 100;
+  --z-modal: 200;
+  --z-tooltip: 300;
+  --z-notification: 400;
+
+  --primary: #0059ff;
+  --primary-hover: #3c80ff;
+  --toolbar-bg: #0047cc;
+  --mod-enabled: #6ebe3f;
+  --mod-enabled-hover: #608a4f;
+  --table-header: #252525;
+  --table-row-hover: #ffffff08;
+
+  --nav-width: 300px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-panel: var(--panel);
+  --color-panel-secondary: var(--panel-secondary);
+  --color-content-panel: var(--content-panel);
+  --color-card: var(--card);
+  --color-sidebar: var(--sidebar);
+  --color-titlebar: var(--titlebar);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-border: var(--border);
+  --color-error: var(--error);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+  --color-info: var(--info);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-toolbar: var(--toolbar-bg);
+  --color-mod-enabled: var(--mod-enabled);
+  --color-mod-enabled-hover: var(--mod-enabled-hover);
+  --color-table-header: var(--table-header);
+  --color-table-row-hover: var(--table-row-hover);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-active: var(--text-active);
+  --color-text-disabled: var(--text-disabled);
+  --color-panel-hover: var(--panel-hover);
+  --color-panel-active: var(--panel-active);
+  --color-statusbar: var(--statusbar);
+  --color-statusbar-fg: var(--statusbar-fg);
+  --color-input-bg: var(--input-bg);
+  --color-button-bg: var(--button-bg);
+  --color-button-hover: var(--button-hover);
+  --width-nav: var(--nav-width);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --z-index-dropdown: var(--z-dropdown);
+  --z-index-modal: var(--z-modal);
+  --z-index-tooltip: var(--z-tooltip);
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+}
+
+body:not([data-developer-tools="true"]) {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body:not([data-developer-tools="true"]) input,
+body:not([data-developer-tools="true"]) textarea,
+body:not([data-developer-tools="true"]) [contenteditable="true"] {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+main,
+aside,
+[data-theme-slot="shell.sidebar"],
+.bg-content-panel {
+  contain: layout style paint;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.titlebar {
+  position: relative;
+}
+
+.titlebar-drag {
+  app-region: drag;
+  -webkit-app-region: drag;
+}
+
+.titlebar-left,
+.titlebar-right,
+.titlebar-button,
+.titlebar-control,
+nav button {
+  app-region: no-drag;
+  -webkit-app-region: no-drag;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar);
+  border-radius: var(--radius-md);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover);
+}
+
+.compact-bar-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.compact-bar-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.compact-bar-fade {
+  background: linear-gradient(
+    to top,
+    var(--panel) 0%,
+    color-mix(in srgb, var(--panel) 75%, transparent) 55%,
+    transparent 100%
+  );
+}
+
+@layer utilities {
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  .animate-fade {
+    animation: fadeIn 0.5s ease-out 0.5s both;
+  }
+
+  @keyframes tileSheen {
+    0% {
+      transform: translateX(-120%) skewX(-12deg);
+      opacity: 0;
+    }
+    15% {
+      opacity: 0.5;
+    }
+    100% {
+      transform: translateX(120%) skewX(-12deg);
+      opacity: 0;
+    }
+  }
+
+  .tile-sheen {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 5;
+  }
+
+  .tile-sheen::after {
+    content: "";
+    position: absolute;
+    inset: -50% -90%;
+    background: linear-gradient(
+      105deg,
+      transparent 5%,
+      rgba(255, 255, 255, 0.459) 60%,
+      transparent 90%
+    );
+    animation: tileSheen 1.5s ease-out forwards;
+  }
+
+  @keyframes tileTitleIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .tile-title-in {
+    animation: tileTitleIn 0.15s ease-out forwards;
+  }
+
+  .ps-focus-ring {
+    position: absolute;
+    pointer-events: none;
+    padding: 2px;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.65) 0%,
+      rgba(255, 255, 255, 0.12) 42%,
+      rgba(255, 255, 255, 0.45) 100%
+    );
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+}

@@ -1,0 +1,11 @@
+id: windows-95
+name: Windows 95
+author: Supervisor
+description: Classic gray shell with navy title bar, beveled controls, and teal desktop vibes
+apiVersion: 1
+minSupervisorVersion: "0.1.0"
+css:
+  - tokens.css
+  - theme.css
+layouts:
+  - layouts/shell.json
