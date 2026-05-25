@@ -51,22 +51,23 @@ export function SidebarGamePanel({ game, onPickGame }: Props) {
 
   return (
     <>
-      <div className="shrink-0">
+      <div className="shrink-0 p-2">
         <p className="mb-2 px-1 truncate text-sm font-medium text-text-primary">{game.name}</p>
+        {cover ? (
+          <img src={cover} alt="" className="aspect-460/215 w-full rounded-lg object-cover" />
+        ) : (
+          <div className="flex aspect-460/215 w-full items-center justify-center rounded-lg bg-panel-secondary text-center text-xs text-text-muted">
+            {game.name}
+          </div>
+        )}
         <button
           type="button"
           onClick={() => void play()}
           disabled={playing}
-          className="mb-3 mx-1 flex h-7 w-20 items-center justify-center gap-1.5 rounded-lg bg-primary text-sm text-white hover:bg-primary-hover disabled:opacity-60"
-        >          Play
+          className="mt-3 flex h-8 w-full items-center justify-center gap-1.5 rounded-lg bg-primary text-sm text-white hover:bg-primary-hover disabled:opacity-60"
+        >
+          Play
         </button>
-        {cover ? (
-          <img src={cover} alt="" className="aspect-[460/215] w-full rounded-lg object-cover" />
-        ) : (
-          <div className="flex aspect-[460/215] w-full items-center justify-center bg-panel-secondary text-center text-xs text-text-muted">
-            {game.name}
-          </div>
-        )}
       </div>
 
       <IssueModal issue={issue} onClose={() => setIssue(null)} onChoice={() => setIssue(null)} />
