@@ -119,11 +119,20 @@ export function Carousel({
     (index: number) => {
       const item = items[index];
       if (!item) return;
-      setFocusedIndex(index);
-      if (item.isAddGame) return;
-      if (item.game) onSelect(item.game);
+      if (index === focusedIndex) {
+        if (item.isAddGame) {
+          onAddGame?.();
+        } else if (item.game) {
+          onSelect(item.game);
+        }
+      } else {
+        setFocusedIndex(index);
+        if (!item.isAddGame && item.game) {
+          onSelect(item.game);
+        }
+      }
     },
-    [items, onSelect],
+    [focusedIndex, items, onAddGame, onSelect],
   );
 
   useEffect(() => {
