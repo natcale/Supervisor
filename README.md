@@ -84,3 +84,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Bug reports and pull requests are welcom
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
+View on [Nexusmods](https://www.nexusmods.com/site/mods/1933)
