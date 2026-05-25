@@ -43,7 +43,6 @@ type Props = {
   onModsUpdated: (mods: ModManifest[]) => void;
   onModsReordered?: (mods: ModManifest[]) => void;
   onDeployComplete: () => void;
-  onDownloadComplete?: (gameId: string, mods: ModManifest[], stagingDir: string) => void;
   onNavigate: (view: ShellView) => void;
   onGamesLoaded?: (games: DetectedGame[]) => void;
   nxmNotice?: string | null;
@@ -68,7 +67,6 @@ export function MainContent({
   onModsUpdated,
   onModsReordered,
   onDeployComplete,
-  onDownloadComplete,
   onNavigate,
   onGamesLoaded,
   nxmNotice,
@@ -164,7 +162,6 @@ export function MainContent({
           <DownloadsPanel
             gameId={game?.id}
             nexusDomain={game?.nexusDomain}
-            onDownloadComplete={onDownloadComplete}
           />
           <IssueModal issue={issue} onClose={() => setIssue(null)} onChoice={handleIssueChoice} />
         </>

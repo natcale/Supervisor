@@ -35,6 +35,6 @@ export const SETTINGS_DEFAULTS: AppSettings = {
   compactGameSidebarHidden: false,
 };
 
-export function mergeSettings(raw: AppSettings): AppSettings {
+export function mergeSettings(raw: Partial<AppSettings>): AppSettings {
   return { ...SETTINGS_DEFAULTS, ...raw };
 }

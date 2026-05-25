@@ -16,7 +16,7 @@ import { useThemeLayout } from "@/features/themes/theme-provider";
 import { useEffect, useMemo, useState } from "react";
 import { getAppSettings } from "@/lib/api/settings";
 import { getGameProfile } from "@/lib/api/games";
-import { mergeSettings } from "@/lib/settings-defaults";
+import { mergeSettings, SETTINGS_DEFAULTS } from "@/lib/settings-defaults";
 import { listenSettingsChanged } from "@/lib/settings-events";
 import { isTauri } from "@/lib/env";
 import { listen } from "@tauri-apps/api/event";
@@ -50,7 +50,6 @@ function AppShell({
   handleLoadoutChange,
   handleIngested,
   handleModLink,
-  handleDownloadComplete,
   handleGamesLoaded,
   bumpDeployRefresh,
   nxmNotice,
@@ -65,7 +64,7 @@ function AppShell({
   const { getSlot } = useThemeLayout();
 
   const showCompactBar = useMemo(() => {
-    const settings = mergeSettings(appSettings ?? {});
+    const settings = appSettings ?? SETTINGS_DEFAULTS;
     const themeEnabled = getSlot("shell.compactBar")?.enabled === true;
     if (settings.compactGameSidebarHidden) return false;
     return settings.compactGameSidebar || themeEnabled;
@@ -160,7 +159,6 @@ function AppShell({
               if (selectedGame) reorderMods(selectedGame.id, mods);
             }}
             onDeployComplete={bumpDeployRefresh}
-            onDownloadComplete={handleDownloadComplete}
             onGamesLoaded={handleGamesLoaded}
             onNavigate={setShellView}
             nxmNotice={nxmNotice}
