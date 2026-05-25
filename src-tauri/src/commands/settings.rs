@@ -43,6 +43,15 @@ pub fn open_path(app: tauri::AppHandle, path: String) -> Result<(), UserFacingIs
 
 #[tauri::command]
 pub fn complete_onboarding(app: tauri::AppHandle) -> Result<(), UserFacingIssue> {
+    let data = app_data(&app)?;
+    let mut saved = settings::load_settings(&data).map_err(|e| e.to_user_issue())?;
+    // Save this so the next launch skips onboarding.
+    if !saved.onboarding_complete {
+        saved.onboarding_complete = true;
+        settings::save_settings(&data, &saved).map_err(|e| e.to_user_issue())?;
+        let _ = app.emit("settings://changed", &saved);
+    }
+
     if let Some(onboarding) = app.get_webview_window("onboarding") {
         let _ = onboarding.close();
     }

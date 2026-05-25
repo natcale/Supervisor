@@ -36,6 +36,7 @@
         "resizable": false,
         "fullscreen": false,
         "decorations": false,
+        "visible": false,
         "center": true
       }
     ],

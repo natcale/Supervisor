@@ -11,6 +11,7 @@ describe("SETTINGS_DEFAULTS", () => {
     expect(SETTINGS_DEFAULTS.rememberLastGame).toBe(true);
     expect(SETTINGS_DEFAULTS.updateCheckMode).toBe("onRefresh");
     expect(SETTINGS_DEFAULTS.activeThemeId).toBe("default");
+    expect(SETTINGS_DEFAULTS.onboardingComplete).toBe(false);
   });
 });
 

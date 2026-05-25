@@ -29,6 +29,8 @@ impl Default for UpdateCheckMode {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", default)]
 pub struct AppSettings {
+    #[serde(default)]
+    pub onboarding_complete: bool,
     pub update_check_mode: UpdateCheckMode,
     /// Display-only for now; deploy engine uses hardlinks.
     pub deploy_method: String,
@@ -124,6 +126,7 @@ fn default_max_downloads() -> u32 {
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
+            onboarding_complete: false,
             update_check_mode: UpdateCheckMode::OnRefresh,
             deploy_method: "hardlink".into(),
             auto_deploy_on_change: true,
@@ -280,6 +283,7 @@ mod tests {
         assert_eq!(loaded.scan_steam, defaults.scan_steam);
         assert_eq!(loaded.max_concurrent_downloads, 2);
         assert_eq!(loaded.deploy_method, "hardlink");
+        assert!(!loaded.onboarding_complete);
         let _ = fs::remove_dir_all(dir);
     }
 
@@ -289,8 +293,23 @@ mod tests {
         fs::create_dir_all(&dir).unwrap();
         fs::write(dir.join("settings.json"), r#"{"deployMethod":"hardlink"}"#).unwrap();
         let loaded = load_settings(&dir).unwrap();
+        assert!(!loaded.onboarding_complete);
         assert!(loaded.scan_steam);
         assert_eq!(loaded.max_concurrent_downloads, 2);
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn saves_onboarding_completion() {
+        let dir = std::env::temp_dir().join(format!("supervisor-test-{}", uuid::Uuid::new_v4()));
+        fs::create_dir_all(&dir).unwrap();
+        let settings = AppSettings {
+            onboarding_complete: true,
+            ..AppSettings::default()
+        };
+        save_settings(&dir, &settings).unwrap();
+        let loaded = load_settings(&dir).unwrap();
+        assert!(loaded.onboarding_complete);
         let _ = fs::remove_dir_all(dir);
     }
 

@@ -111,6 +111,7 @@ export interface DeployGameRequest {
 export type UpdateCheckMode = "manual" | "onRefresh" | "onStartup";
 
 export interface AppSettings {
+  onboardingComplete: boolean;
   updateCheckMode: UpdateCheckMode;
   deployMethod: string;
   nexusApiKey?: string;

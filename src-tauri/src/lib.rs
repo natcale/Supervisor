@@ -46,8 +46,6 @@ mod root_builder;
 
 mod vdf;
 
-
-
 use commands::handle_argv;
 
 use nexus::DownloadQueue;
@@ -58,14 +56,9 @@ use tauri::Manager;
 
 use tauri_plugin_deep_link::DeepLinkExt;
 
-
-
 fn focus_main_window_if_needed(app: &tauri::AppHandle) {
-
     let Some(window) = app.get_webview_window("main") else {
-
         return;
-
     };
 
     let minimized = window.is_minimized().unwrap_or(false);
@@ -73,45 +66,28 @@ fn focus_main_window_if_needed(app: &tauri::AppHandle) {
     let visible = window.is_visible().unwrap_or(true);
 
     if minimized || !visible {
-
         let _ = window.unminimize();
 
         let _ = window.show();
 
         let _ = window.set_focus();
-
     }
-
 }
-
-
 
 pub struct AppState {
-
     pub downloads: Arc<DownloadQueue>,
-
 }
-
-
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 
 pub fn run() {
-
     let downloads = Arc::new(DownloadQueue::new());
 
-
-
     let mut builder = tauri::Builder::default()
-
         .manage(AppState { downloads })
-
         .plugin(tauri_plugin_shell::init())
-
         .plugin(tauri_plugin_dialog::init())
-
         .plugin(tauri_plugin_deep_link::init())
-
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_process::init());
 
@@ -121,23 +97,15 @@ pub fn run() {
     }
 
     #[cfg(desktop)]
-
     {
-
         builder = builder.plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
-
             handle_argv(app, &argv);
 
             focus_main_window_if_needed(app);
-
         }));
-
     }
 
-
-
     builder
-
         .setup(|app| {
             let app_data = app.path().app_data_dir()?;
             let _ = secrets::migrate_nexus_api_key_from_settings(&app_data);
@@ -181,21 +149,34 @@ pub fn run() {
             settings::ensure_app_dirs(&app_data).ok();
             app.state::<AppState>().downloads.init(&app_data)?;
             let _ = themes::ensure_themes_dir(&app_data);
-            commands::downloads::pump_download_queue(app.handle(), &app.state::<AppState>().downloads);
+            commands::downloads::pump_download_queue(
+                app.handle(),
+                &app.state::<AppState>().downloads,
+            );
 
-            if let Some(main) = app.get_webview_window("main") {
-                let _ = main.hide();
-            }
-            if let Some(onboarding) = app.get_webview_window("onboarding") {
-                let _ = onboarding.show();
-                let _ = onboarding.set_focus();
+            // Completed setup should go straight to the main window
+            if settings.onboarding_complete {
+                if let Some(onboarding) = app.get_webview_window("onboarding") {
+                    let _ = onboarding.close();
+                }
+                if let Some(main) = app.get_webview_window("main") {
+                    let _ = main.show();
+                    let _ = main.set_focus();
+                }
+            } else {
+                if let Some(main) = app.get_webview_window("main") {
+                    let _ = main.hide();
+                }
+                if let Some(onboarding) = app.get_webview_window("onboarding") {
+                    let _ = onboarding.show();
+                    let _ = onboarding.set_focus();
+                }
             }
 
             commands::configure_runtime_from_settings(app.handle(), &settings);
 
             Ok(())
         })
-
         .invoke_handler(tauri::generate_handler![
             commands::scan_games,
             commands::check_partition,
@@ -260,10 +241,6 @@ pub fn run() {
             commands::read_theme_asset,
             commands::open_themes_folder,
         ])
-
         .run(tauri::generate_context!())
-
         .expect("error while running tauri application");
-
 }
-

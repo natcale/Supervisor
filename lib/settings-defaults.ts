@@ -5,6 +5,7 @@
 import type { AppSettings } from "@/types";
 
 export const SETTINGS_DEFAULTS: AppSettings = {
+  onboardingComplete: false,
   updateCheckMode: "onRefresh",
   deployMethod: "hardlink",
   autoDeployOnChange: true,

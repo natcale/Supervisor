@@ -7,7 +7,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Titlebar } from "@/features/layout/ui/titlebar";
 import { Button } from "@/components/ui/button";
-import { scanGames, completeOnboarding } from "@/lib/tauri";
+import { scanGames, completeOnboarding, getAppSettings } from "@/lib/tauri";
 import { isOnboardingComplete, markOnboardingComplete } from "@/lib/onboarding";
 import { isTauri } from "@/lib/env";
 import { formatInvokeError } from "@/lib/errors";
@@ -70,6 +70,7 @@ export function OnboardingScreen() {
   const [showAll, setShowAll] = useState(false);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [checkingCompletion, setCheckingCompletion] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const loadGames = useCallback(async (includeAll: boolean) => {
@@ -87,10 +88,30 @@ export function OnboardingScreen() {
   }, []);
 
   useEffect(() => {
-    if (!isTauri()) return;
-    if (isOnboardingComplete()) {
-      void completeOnboarding();
+    if (!isTauri()) {
+      setCheckingCompletion(false);
+      return;
     }
+    if (isOnboardingComplete()) {
+      void completeOnboarding().catch((e) => {
+        setError(formatInvokeError(e));
+        setCheckingCompletion(false);
+      });
+      return;
+    }
+
+    void getAppSettings()
+      .then((settings) => {
+        if (settings.onboardingComplete) {
+          markOnboardingComplete();
+          return completeOnboarding();
+        }
+        setCheckingCompletion(false);
+      })
+      .catch((e) => {
+        setError(formatInvokeError(e));
+        setCheckingCompletion(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -124,6 +145,14 @@ export function OnboardingScreen() {
       setBusy(false);
     }
   };
+
+  if (checkingCompletion) {
+    return (
+      <div className="flex h-screen flex-col overflow-hidden bg-background">
+        <Titlebar variant="compact" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
