@@ -7,6 +7,16 @@ use crate::commands::{launch_detected_game, staging_dir_for};
 use crate::errors::UserFacingIssue;
 use crate::game_detection::{manual, scan_all_games, DetectedGame, GameScanResult};
 use crate::games::{profile_summary, resolve_profile};
+use crate::settings::load_settings;
+use std::path::Path;
+
+fn resolve_include_all(app_data: &Path, include_all: Option<bool>) -> bool {
+    include_all.unwrap_or_else(|| {
+        load_settings(app_data)
+            .unwrap_or_default()
+            .show_unmoddable_games
+    })
+}
 
 #[tauri::command]
 pub fn scan_games(
@@ -14,7 +24,8 @@ pub fn scan_games(
     include_all: Option<bool>,
 ) -> Result<GameScanResult, UserFacingIssue> {
     let app_data = crate::commands::app_data(&app)?;
-    scan_all_games(&app_data, include_all.unwrap_or(false)).map_err(|e| e.to_user_issue())
+    let include_all = resolve_include_all(&app_data, include_all);
+    scan_all_games(&app_data, include_all).map_err(|e| e.to_user_issue())
 }
 
 #[tauri::command]

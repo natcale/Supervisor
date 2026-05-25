@@ -6,6 +6,7 @@ import { invoke } from "@tauri-apps/api/core";
 import type { DetectedGame, GameProfileSummary, GameScanResult } from "@/types";
 
 export async function scanGames(options?: { includeAll?: boolean }): Promise<GameScanResult> {
+  // Omitting includeAll (null on the wire) uses showUnmoddableGames from saved settings.
   return invoke("scan_games", { includeAll: options?.includeAll ?? null });
 }
 
