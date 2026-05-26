@@ -10,6 +10,7 @@ pub use queue::*;
 
 use crate::deep_link::NxmModLink;
 use crate::errors::{AppError, AppResult};
+use crate::library::NexusMeta;
 use futures_util::StreamExt;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -66,8 +67,10 @@ pub async fn download_mod_archive(
             if window_bytes >= limit {
                 let elapsed = window_start.elapsed();
                 if elapsed.as_millis() < 1000 {
-                    tokio::time::sleep(std::time::Duration::from_millis(1000 - elapsed.as_millis() as u64))
-                        .await;
+                    tokio::time::sleep(std::time::Duration::from_millis(
+                        1000 - elapsed.as_millis() as u64,
+                    ))
+                    .await;
                 }
                 window_start = std::time::Instant::now();
                 window_bytes = 0;
@@ -145,6 +148,35 @@ fn parse_content_disposition(header: &str) -> Option<String> {
         }
     }
     None
+}
+
+/// Fetch mod page details and the installed file version from Nexus.
+pub async fn hydrate_nexus_meta(
+    domain: &str,
+    mod_id: u64,
+    file_id: u64,
+    api_key: &str,
+    picture_url: Option<String>,
+) -> AppResult<(NexusMeta, String)> {
+    let details = fetch_mod_details(domain, mod_id, api_key).await?;
+    let file_version = fetch_latest_file_version(domain, mod_id, file_id, api_key).await?;
+
+    let meta = NexusMeta {
+        mod_id,
+        file_id,
+        domain: domain.to_string(),
+        version: file_version.clone(),
+        author: details.author,
+        picture_url: picture_url.or(details.picture_url),
+        category: details.category,
+        endorsed: None,
+        tracked: false,
+        update_available: false,
+        latest_version: file_version,
+        summary: details.summary,
+    };
+
+    Ok((meta, details.name))
 }
 
 #[cfg(test)]

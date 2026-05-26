@@ -71,7 +71,12 @@ pub async fn enqueue_nxm_download(
     mod_name: Option<String>,
 ) -> Result<String, UserFacingIssue> {
     let api_key = secrets::get_nexus_api_key().map_err(|e| e.to_user_issue())?;
-    if link.key.is_none() && api_key.as_ref().map(|k| k.trim().is_empty()).unwrap_or(true) {
+    if link.key.is_none()
+        && api_key
+            .as_ref()
+            .map(|k| k.trim().is_empty())
+            .unwrap_or(true)
+    {
         return Err(AppError::user(
             "This download link is missing authorization. Add a Nexus API key in Settings, or click \
              \"Mod Manager Download\" on Nexus while logged in.",
@@ -83,21 +88,17 @@ pub async fn enqueue_nxm_download(
         .downloads
         .has_active_job(&game_id, link.mod_id, link.file_id)
     {
-        let existing = state
-            .downloads
-            .list()
-            .into_iter()
-            .find(|j| {
-                j.game_id == game_id
-                    && j.mod_id == link.mod_id
-                    && j.file_id == link.file_id
-                    && matches!(
-                        j.status,
-                        DownloadStatus::Queued
-                            | DownloadStatus::Downloading
-                            | DownloadStatus::Ingesting
-                    )
-            });
+        let existing = state.downloads.list().into_iter().find(|j| {
+            j.game_id == game_id
+                && j.mod_id == link.mod_id
+                && j.file_id == link.file_id
+                && matches!(
+                    j.status,
+                    DownloadStatus::Queued
+                        | DownloadStatus::Downloading
+                        | DownloadStatus::Ingesting
+                )
+        });
         if let Some(job) = existing {
             return Ok(job.id);
         }
@@ -170,22 +171,7 @@ pub async fn download_nxm_mod(
         .map_err(|e| e.to_user_issue())?;
 
     if let Some(m) = result.mods.first_mut() {
-        m.id = format!("nxm-{}-{}", link.mod_id, link.file_id);
-        m.name = mod_name.unwrap_or_else(|| format!("{} mod #{}", link.game_domain, link.mod_id));
-        m.nexus = Some(NexusMeta {
-            mod_id: link.mod_id,
-            file_id: link.file_id,
-            domain: link.game_domain.clone(),
-            version: None,
-            author: None,
-            picture_url: None,
-            category: None,
-            endorsed: None,
-            tracked: false,
-            update_available: false,
-            latest_version: None,
-            summary: None,
-        });
+        assign_nexus_meta(m, &link, api_key.as_deref(), None, mod_name).await;
     }
 
     persist_ingested(&data, &game_id, &result.mods)?;
@@ -308,25 +294,21 @@ async fn run_download_job(
     }
 
     let api_key = secrets::get_nexus_api_key().ok().flatten();
-    let archive = match nexus::download_mod_archive(
-        &link,
-        &dl_dir,
-        api_key.as_deref(),
-        speed_limit_kbps,
-    )
-    .await
-    {
-        Ok(p) => p,
-        Err(e) => {
-            queue.update(&job_id, |j| {
-                j.status = DownloadStatus::Failed;
-                j.error = Some(e.to_string());
-            });
-            emit_update(&queue, &app);
-            pump_download_queue(&app, &queue);
-            return;
-        }
-    };
+    let archive =
+        match nexus::download_mod_archive(&link, &dl_dir, api_key.as_deref(), speed_limit_kbps)
+            .await
+        {
+            Ok(p) => p,
+            Err(e) => {
+                queue.update(&job_id, |j| {
+                    j.status = DownloadStatus::Failed;
+                    j.error = Some(e.to_string());
+                });
+                emit_update(&queue, &app);
+                pump_download_queue(&app, &queue);
+                return;
+            }
+        };
 
     queue.update(&job_id, |j| {
         j.status = DownloadStatus::Ingesting;
@@ -335,37 +317,36 @@ async fn run_download_job(
     emit_update(&queue, &app);
 
     let game_staging = dl_dir.parent().unwrap().to_path_buf();
-    let ingest_result = match ingest::ingest_paths(&game_staging, &[archive.to_string_lossy().into_owned()]) {
-        Ok(r) => r,
-        Err(e) => {
-            queue.update(&job_id, |j| {
-                j.status = DownloadStatus::Failed;
-                j.error = Some(e.to_string());
-            });
-            emit_update(&queue, &app);
-            pump_download_queue(&app, &queue);
-            return;
-        }
-    };
+    let ingest_result =
+        match ingest::ingest_paths(&game_staging, &[archive.to_string_lossy().into_owned()]) {
+            Ok(r) => r,
+            Err(e) => {
+                queue.update(&job_id, |j| {
+                    j.status = DownloadStatus::Failed;
+                    j.error = Some(e.to_string());
+                });
+                emit_update(&queue, &app);
+                pump_download_queue(&app, &queue);
+                return;
+            }
+        };
 
     let mut ingested = ingest_result.mods;
+    let picture_url = queue
+        .list()
+        .iter()
+        .find(|j| j.id == job_id)
+        .and_then(|j| j.picture_url.clone());
+
     if let Some(m) = ingested.first_mut() {
-        m.id = format!("nxm-{}-{}", link.mod_id, link.file_id);
-        m.name = mod_name;
-        m.nexus = Some(NexusMeta {
-            mod_id: link.mod_id,
-            file_id: link.file_id,
-            domain: link.game_domain.clone(),
-            version: None,
-            author: None,
-            picture_url: None,
-            category: None,
-            endorsed: None,
-            tracked: false,
-            update_available: false,
-            latest_version: None,
-            summary: None,
-        });
+        assign_nexus_meta(
+            m,
+            &link,
+            api_key.as_deref(),
+            picture_url.clone(),
+            Some(mod_name),
+        )
+        .await;
     }
 
     if let Err(e) = persist_ingested(&data, &game_id, &ingested) {
@@ -376,20 +357,6 @@ async fn run_download_job(
         emit_update(&queue, &app);
         pump_download_queue(&app, &queue);
         return;
-    }
-
-    let picture_url = queue
-        .list()
-        .iter()
-        .find(|j| j.id == job_id)
-        .and_then(|j| j.picture_url.clone());
-
-    if let Some(m) = ingested.first_mut() {
-        if let Some(ref url) = picture_url {
-            if let Some(ref mut nexus) = m.nexus {
-                nexus.picture_url = Some(url.clone());
-            }
-        }
     }
 
     queue.remove(&job_id);
@@ -403,4 +370,47 @@ async fn run_download_job(
         }),
     );
     pump_download_queue(&app, &queue);
+}
+
+async fn assign_nexus_meta(
+    entry: &mut ingest::IngestedMod,
+    link: &crate::deep_link::NxmModLink,
+    api_key: Option<&str>,
+    picture_url: Option<String>,
+    mod_name: Option<String>,
+) {
+    entry.id = format!("nxm-{}-{}", link.mod_id, link.file_id);
+    if let Some(key) = api_key.filter(|k| !k.trim().is_empty()) {
+        if let Ok((meta, api_name)) = nexus::hydrate_nexus_meta(
+            &link.game_domain,
+            link.mod_id,
+            link.file_id,
+            key,
+            picture_url,
+        )
+        .await
+        {
+            entry.nexus = Some(meta);
+            entry.name = mod_name
+                .filter(|name| !name.trim().is_empty())
+                .unwrap_or(api_name);
+            return;
+        }
+    }
+
+    entry.name = mod_name.unwrap_or_else(|| format!("{} mod #{}", link.game_domain, link.mod_id));
+    entry.nexus = Some(NexusMeta {
+        mod_id: link.mod_id,
+        file_id: link.file_id,
+        domain: link.game_domain.clone(),
+        version: None,
+        author: None,
+        picture_url: None,
+        category: None,
+        endorsed: None,
+        tracked: false,
+        update_available: false,
+        latest_version: None,
+        summary: None,
+    });
 }

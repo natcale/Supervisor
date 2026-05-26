@@ -43,7 +43,6 @@ struct ApiModResponse {
 #[derive(Debug, Deserialize)]
 struct ApiFileResponse {
     version: Option<String>,
-    name: Option<String>,
 }
 
 pub async fn fetch_mod_details(
@@ -199,9 +198,8 @@ pub async fn fetch_latest_file_version(
     file_id: u64,
     api_key: &str,
 ) -> AppResult<Option<String>> {
-    let url = format!(
-        "https://api.nexusmods.com/v1/games/{domain}/mods/{mod_id}/files/{file_id}.json"
-    );
+    let url =
+        format!("https://api.nexusmods.com/v1/games/{domain}/mods/{mod_id}/files/{file_id}.json");
     let client = reqwest::Client::new();
     let response = client
         .get(&url)
@@ -216,5 +214,41 @@ pub async fn fetch_latest_file_version(
     }
 
     let body: ApiFileResponse = response.json().await?;
-    Ok(body.version.or(body.name))
+    Ok(body.version.filter(|v| !v.trim().is_empty()))
+}
+
+pub fn normalize_version(value: &str) -> String {
+    value.trim().to_lowercase()
+}
+
+/// Returns true when both sides have a version string and they differ after normalization.
+pub fn versions_differ(installed: Option<&str>, remote: Option<&str>) -> bool {
+    let Some(remote) = remote.filter(|v| !v.trim().is_empty()) else {
+        return false;
+    };
+    let Some(installed) = installed.filter(|v| !v.trim().is_empty()) else {
+        return false;
+    };
+    normalize_version(installed) != normalize_version(remote)
+}
+
+#[cfg(test)]
+mod version_tests {
+    use super::*;
+
+    #[test]
+    fn versions_match_after_normalization() {
+        assert!(!versions_differ(Some("1.0.0"), Some("1.0.0 ")));
+        assert!(!versions_differ(Some("v2"), Some("V2")));
+    }
+
+    #[test]
+    fn missing_installed_version_is_not_an_update() {
+        assert!(!versions_differ(None, Some("1.0.0")));
+    }
+
+    #[test]
+    fn detects_real_version_change() {
+        assert!(versions_differ(Some("1.0"), Some("1.1")));
+    }
 }

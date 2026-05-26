@@ -5,7 +5,10 @@
 use crate::commands::app_data;
 use crate::errors::UserFacingIssue;
 use crate::library::{self, NexusMeta};
-use crate::nexus::{fetch_latest_file_version, fetch_mod_details, validate_api_key, ModUpdateCheck, NexusModDetails};
+use crate::nexus::{
+    fetch_latest_file_version, fetch_mod_details, hydrate_nexus_meta, validate_api_key,
+    versions_differ, ModUpdateCheck, NexusModDetails,
+};
 use crate::secrets;
 
 fn require_api_key() -> Result<String, UserFacingIssue> {
@@ -42,24 +45,19 @@ pub async fn check_mod_updates(
 
     let mut library = library::get_library(&data, &game_id).map_err(|e| e.to_user_issue())?;
     let mut results = Vec::new();
-    let mut patches: Vec<(String, bool, Option<String>)> = Vec::new();
 
     let targets: Vec<_> = library
         .mods
         .iter()
         .filter_map(|m| {
-            m.nexus.as_ref().map(|n| {
-                (
-                    m.id.clone(),
-                    m.name.clone(),
-                    n.clone(),
-                )
-            })
+            m.nexus
+                .as_ref()
+                .map(|n| (m.id.clone(), m.name.clone(), n.clone()))
         })
         .collect();
 
     for (mod_id, mod_name, nexus) in targets {
-        let latest = fetch_latest_file_version(
+        let remote = fetch_latest_file_version(
             &nexus.domain,
             nexus.mod_id as u64,
             nexus.file_id as u64,
@@ -68,34 +66,34 @@ pub async fn check_mod_updates(
         .await
         .map_err(|e| e.to_user_issue())?;
 
-        let current = nexus.version.clone();
-        let update_available = match (&current, &latest) {
-            (Some(c), Some(l)) => l != c,
-            (_, Some(_)) => true,
-            _ => false,
+        let installed = nexus.version.clone();
+        let (version, update_available) = match (&installed, &remote) {
+            (None, Some(r)) => (Some(r.clone()), false),
+            (Some(c), Some(r)) => (Some(c.clone()), versions_differ(Some(c), Some(r))),
+            (Some(c), None) => (Some(c.clone()), false),
+            (None, None) => (None, false),
         };
 
-        patches.push((mod_id.clone(), update_available, latest.clone()));
+        if let Some(entry) = library.mods.iter_mut().find(|m| m.id == mod_id) {
+            if let Some(meta) = &mut entry.nexus {
+                if meta.version.is_none() {
+                    meta.version = version.clone();
+                }
+                meta.update_available = update_available;
+                meta.latest_version = remote.clone();
+            }
+        }
 
         if update_available {
             results.push(ModUpdateCheck {
                 mod_id,
                 mod_name,
-                current_version: current,
-                latest_version: latest,
+                current_version: version,
+                latest_version: remote,
                 update_available: true,
                 nexus_mod_id: nexus.mod_id as u64,
                 domain: nexus.domain,
             });
-        }
-    }
-
-    for (mod_id, update_available, latest) in patches {
-        if let Some(entry) = library.mods.iter_mut().find(|m| m.id == mod_id) {
-            if let Some(meta) = &mut entry.nexus {
-                meta.update_available = update_available;
-                meta.latest_version = latest;
-            }
         }
     }
 
@@ -126,33 +124,48 @@ pub async fn enrich_mod_metadata(
         crate::errors::AppError::user("This mod has no Nexus metadata.").to_user_issue()
     })?;
 
-    let details = fetch_mod_details(&nexus.domain, nexus.mod_id as u64, &api_key)
-        .await
-        .map_err(|e| e.to_user_issue())?;
+    let updated = hydrate_nexus_meta(
+        &nexus.domain,
+        nexus.mod_id as u64,
+        nexus.file_id as u64,
+        &api_key,
+        nexus.picture_url.clone(),
+    )
+    .await
+    .map_err(|e| e.to_user_issue())?;
 
-    let updated = NexusMeta {
+    let (hydrated, api_name) = updated;
+    let installed_version = nexus.version.clone();
+    let merged = NexusMeta {
         mod_id: nexus.mod_id,
         file_id: nexus.file_id,
         domain: nexus.domain,
-        version: details.version.or(nexus.version),
-        author: details.author.or(nexus.author),
-        picture_url: details.picture_url.or(nexus.picture_url),
-        category: details.category.or(nexus.category),
+        version: hydrated.version.clone().or(installed_version.clone()),
+        author: hydrated.author.or(nexus.author),
+        picture_url: hydrated.picture_url.or(nexus.picture_url),
+        category: hydrated.category.or(nexus.category),
         endorsed: nexus.endorsed,
         tracked: nexus.tracked,
-        update_available: nexus.update_available,
-        latest_version: nexus.latest_version,
-        summary: details.summary.or(nexus.summary),
+        update_available: versions_differ(
+            hydrated.version.as_deref().or(installed_version.as_deref()),
+            hydrated.latest_version.as_deref(),
+        ),
+        latest_version: hydrated.latest_version,
+        summary: hydrated.summary.or(nexus.summary),
     };
 
     if let Some(entry) = library.mods.iter_mut().find(|m| m.id == mod_id) {
-        entry.nexus = Some(updated.clone());
-        entry.name = details.name;
+        entry.nexus = Some(merged.clone());
+        if entry.name.trim().is_empty()
+            || entry.name.starts_with(&format!("{} mod #", merged.domain))
+        {
+            entry.name = api_name;
+        }
     }
     library.updated_at = library::now_ts();
     library::save_library(&data, &library).map_err(|e| e.to_user_issue())?;
 
-    Ok(updated)
+    Ok(merged)
 }
 
 #[tauri::command]
