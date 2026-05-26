@@ -2,7 +2,7 @@
  *  Copyright (c) Supervisor contributors. All rights reserved.
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-use super::{GameLibrary, now_ts};
+use super::{now_ts, GameLibrary};
 use crate::errors::{AppError, AppResult};
 use std::fs;
 use std::path::{Path, PathBuf};

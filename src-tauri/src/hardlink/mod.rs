@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 //! Low-level hardlink engine for same-partition file linking.
 #![allow(dead_code)]
-use crate::errors::{AppError, AppResult, UserFacingIssue, UserChoice};
+use crate::errors::{AppError, AppResult, UserChoice, UserFacingIssue};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -272,10 +272,7 @@ fn volume_id(path: &Path) -> AppResult<String> {
             .ok_or_else(|| AppError::user("Could not determine drive for path."))?;
 
         let root_path = format!("{root}\\");
-        let wide: Vec<u16> = root_path
-            .encode_utf16()
-            .chain(std::iter::once(0))
-            .collect();
+        let wide: Vec<u16> = root_path.encode_utf16().chain(std::iter::once(0)).collect();
 
         let mut serial: u32 = 0;
         let ok = unsafe {

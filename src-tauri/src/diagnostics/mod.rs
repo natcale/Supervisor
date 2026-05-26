@@ -2,8 +2,8 @@
  *  Copyright (c) Supervisor contributors. All rights reserved.
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-use crate::errors::UserFacingIssue;
 use crate::errors::UserChoice;
+use crate::errors::UserFacingIssue;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 
@@ -32,10 +32,16 @@ pub fn analyze_with_conflicts(mods: &[ModManifest], enabled_ids: &[String]) -> D
     let mut file_owners: HashMap<String, Vec<(String, String)>> = HashMap::new();
 
     for mod_id in &enabled {
-        let Some(m) = mod_map.get(mod_id) else { continue };
+        let Some(m) = mod_map.get(mod_id) else {
+            continue;
+        };
         for dep in &m.dependencies {
             if !enabled.contains(dep) {
-                issues.push(missing_dependency_issue(&m.name, dep, mod_map.get(dep).copied()));
+                issues.push(missing_dependency_issue(
+                    &m.name,
+                    dep,
+                    mod_map.get(dep).copied(),
+                ));
             }
         }
         for file in &m.files {
@@ -63,9 +69,7 @@ pub fn analyze_with_conflicts(mods: &[ModManifest], enabled_ids: &[String]) -> D
     } else if blocking_count == 1 {
         "One thing needs your decision before installing.".into()
     } else {
-        format!(
-            "{blocking_count} items need your attention before installing."
-        )
+        format!("{blocking_count} items need your attention before installing.")
     };
 
     DiagnosticReport {
@@ -83,7 +87,11 @@ fn normalize_path(path: &str) -> String {
     path.replace('\\', "/").to_lowercase()
 }
 
-fn missing_dependency_issue(mod_name: &str, dep_id: &str, dep: Option<&ModManifest>) -> UserFacingIssue {
+fn missing_dependency_issue(
+    mod_name: &str,
+    dep_id: &str,
+    dep: Option<&ModManifest>,
+) -> UserFacingIssue {
     let dep_name = dep.map(|d| d.name.as_str()).unwrap_or(dep_id);
     UserFacingIssue {
         id: format!("missing-dep-{dep_id}"),

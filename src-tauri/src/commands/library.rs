@@ -2,18 +2,24 @@
  *  Copyright (c) Supervisor contributors. All rights reserved.
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-use crate::commands::{app_data, open_path_in_shell, persist_ingested, staging_dir_for, GameStateResponse};
+use crate::commands::{
+    app_data, open_path_in_shell, persist_ingested, staging_dir_for, GameStateResponse,
+};
 use crate::errors::{AppError, UserFacingIssue};
 use crate::ingest::{self, IngestedMod};
 use crate::install::FomodConfig;
 use crate::library::GameLibrary;
 
 #[tauri::command]
-pub fn get_game_state(app: tauri::AppHandle, game_id: String) -> Result<GameStateResponse, UserFacingIssue> {
+pub fn get_game_state(
+    app: tauri::AppHandle,
+    game_id: String,
+) -> Result<GameStateResponse, UserFacingIssue> {
     let data = app_data(&app)?;
     let staging = staging_dir_for(&app, &game_id)?;
     let library = crate::library::get_library(&data, &game_id).map_err(|e| e.to_user_issue())?;
-    let loadout = crate::loadouts::get_active_loadout(&data, &game_id).map_err(|e| e.to_user_issue())?;
+    let loadout =
+        crate::loadouts::get_active_loadout(&data, &game_id).map_err(|e| e.to_user_issue())?;
     Ok(GameStateResponse {
         library,
         loadout,
@@ -129,7 +135,8 @@ pub fn set_mod_notes(
     notes: Option<String>,
 ) -> Result<GameLibrary, UserFacingIssue> {
     let data = app_data(&app)?;
-    let mut library = crate::library::get_library(&data, &game_id).map_err(|e| e.to_user_issue())?;
+    let mut library =
+        crate::library::get_library(&data, &game_id).map_err(|e| e.to_user_issue())?;
     let entry = library
         .mods
         .iter_mut()
@@ -153,7 +160,8 @@ pub fn open_mod_folder(
         slug
     } else {
         let data = app_data(&app)?;
-        let library = crate::library::get_library(&data, &game_id).map_err(|e| e.to_user_issue())?;
+        let library =
+            crate::library::get_library(&data, &game_id).map_err(|e| e.to_user_issue())?;
         library
             .mods
             .iter()

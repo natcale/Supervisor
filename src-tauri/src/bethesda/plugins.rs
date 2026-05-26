@@ -45,11 +45,7 @@ pub fn scan_plugins_from_mods(
             if !is_plugin(file) {
                 continue;
             }
-            let name = file
-                .rsplit(['/', '\\'])
-                .next()
-                .unwrap_or(file)
-                .to_string();
+            let name = file.rsplit(['/', '\\']).next().unwrap_or(file).to_string();
             if seen.insert(name.clone()) {
                 plugins.push(PluginEntry {
                     name,
@@ -71,5 +67,9 @@ pub fn apply_load_order(plugins: &mut [PluginEntry], order: &[String]) {
         .enumerate()
         .map(|(i, n)| (n.to_lowercase(), i))
         .collect();
-    plugins.sort_by_key(|p| rank.get(&p.name.to_lowercase()).copied().unwrap_or(usize::MAX));
+    plugins.sort_by_key(|p| {
+        rank.get(&p.name.to_lowercase())
+            .copied()
+            .unwrap_or(usize::MAX)
+    });
 }

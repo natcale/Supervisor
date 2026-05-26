@@ -29,7 +29,11 @@ pub fn deploy_redmod(game_root: &Path, slugs: &[String]) -> AppResult<()> {
     let mod_arg = slugs.join(",");
     let root = game_root.to_string_lossy();
     let output = Command::new(&exe)
-        .args(["deploy", &format!("-root={root}"), &format!("-mod={mod_arg}")])
+        .args([
+            "deploy",
+            &format!("-root={root}"),
+            &format!("-mod={mod_arg}"),
+        ])
         .output()
         .map_err(AppError::Io)?;
 

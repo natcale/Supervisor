@@ -169,7 +169,11 @@ mod tests {
 
     #[test]
     fn blocks_wallpaper_engine_by_name() {
-        assert!(is_blocked_utility(None, "Wallpaper Engine", "wallpaper_engine"));
+        assert!(is_blocked_utility(
+            None,
+            "Wallpaper Engine",
+            "wallpaper_engine"
+        ));
     }
 
     #[test]

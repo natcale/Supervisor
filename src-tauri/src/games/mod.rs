@@ -87,8 +87,16 @@ const GENERIC_DEPLOY_TARGETS: &[(&str, &str, &str)] = &[
     ("data", "Data/ (Bethesda, Gamebryo)", "Data"),
     ("mods", "Mods/ (Witcher, Stardew)", "Mods"),
     ("bepinex", "BepInEx/plugins/", "BepInEx/plugins"),
-    ("smf", "Simple Mod Framework/Mods/", "Simple Mod Framework/Mods"),
-    ("pak", "Paks/~mods/ (Unreal .pak)", "MarvelGame/Marvel/Content/Paks/~mods"),
+    (
+        "smf",
+        "Simple Mod Framework/Mods/",
+        "Simple Mod Framework/Mods",
+    ),
+    (
+        "pak",
+        "Paks/~mods/ (Unreal .pak)",
+        "MarvelGame/Marvel/Content/Paks/~mods",
+    ),
     ("mod-root", "mod/ (ReShade, Elden Ring)", "mod"),
 ];
 

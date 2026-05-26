@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 //! Structure-only installer chain run on ingest before file listing.
 
-use crate::install::fomod;
 use crate::errors::{AppError, AppResult};
+use crate::install::fomod;
 use std::fs;
 use std::path::{Path, PathBuf};
 

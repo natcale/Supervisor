@@ -35,7 +35,8 @@ pub fn add_manual_game(
     name: Option<String>,
 ) -> Result<DetectedGame, UserFacingIssue> {
     let app_data = crate::commands::app_data(&app)?;
-    let mut game = manual::add_manual_game(&app_data, install_path, name).map_err(|e| e.to_user_issue())?;
+    let mut game =
+        manual::add_manual_game(&app_data, install_path, name).map_err(|e| e.to_user_issue())?;
     crate::games::attach_profile(&mut game);
     Ok(game)
 }
@@ -57,10 +58,7 @@ pub fn list_supported_profiles() -> Vec<crate::games::GameProfileSummary> {
 }
 
 #[tauri::command]
-pub fn remove_manual_game(
-    app: tauri::AppHandle,
-    game_id: String,
-) -> Result<(), UserFacingIssue> {
+pub fn remove_manual_game(app: tauri::AppHandle, game_id: String) -> Result<(), UserFacingIssue> {
     let app_data = crate::commands::app_data(&app)?;
     manual::remove_manual_game(&app_data, &game_id).map_err(|e| e.to_user_issue())
 }
@@ -72,16 +70,17 @@ pub fn update_manual_game_nexus_domain(
     nexus_domain: Option<String>,
 ) -> Result<DetectedGame, UserFacingIssue> {
     let app_data = crate::commands::app_data(&app)?;
-    let mut game =
-        manual::update_manual_game_nexus_domain(&app_data, &game_id, nexus_domain)
-            .map_err(|e| e.to_user_issue())?;
+    let mut game = manual::update_manual_game_nexus_domain(&app_data, &game_id, nexus_domain)
+        .map_err(|e| e.to_user_issue())?;
     crate::games::attach_profile(&mut game);
     Ok(game)
 }
 
 #[tauri::command]
 pub fn get_staging_dir(app: tauri::AppHandle, game_id: String) -> Result<String, UserFacingIssue> {
-    Ok(staging_dir_for(&app, &game_id)?.to_string_lossy().into_owned())
+    Ok(staging_dir_for(&app, &game_id)?
+        .to_string_lossy()
+        .into_owned())
 }
 
 #[tauri::command]

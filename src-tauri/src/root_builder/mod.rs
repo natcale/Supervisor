@@ -19,7 +19,10 @@ const ROOT_NAMES: &[&str] = &[
     "scriptextender",
 ];
 
-pub fn classify_root_files(_staging_dir: &Path, relative_paths: &[String]) -> (Vec<RootFileEntry>, Vec<String>) {
+pub fn classify_root_files(
+    _staging_dir: &Path,
+    relative_paths: &[String],
+) -> (Vec<RootFileEntry>, Vec<String>) {
     let mut root = Vec::new();
     let mut data = Vec::new();
 
@@ -32,7 +35,9 @@ pub fn classify_root_files(_staging_dir: &Path, relative_paths: &[String]) -> (V
             .to_lowercase();
 
         let is_root = ROOT_NAMES.iter().any(|n| file_name.contains(n))
-            || ROOT_EXTENSIONS.iter().any(|ext| lower.ends_with(&format!(".{ext}")))
+            || ROOT_EXTENSIONS
+                .iter()
+                .any(|ext| lower.ends_with(&format!(".{ext}")))
             || lower.contains("script extender")
             || lower.contains("address library");
 

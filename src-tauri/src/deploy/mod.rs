@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 //! Game deploy orchestration: manifest, verify, purge, and preflight.
-pub mod manifest;
 mod engine;
+pub mod manifest;
 mod purge;
 mod requirements;
 mod sync;

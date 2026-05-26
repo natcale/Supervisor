@@ -65,7 +65,8 @@ fn read_quoted<'a>(bytes: &'a [u8], pos: &mut usize) -> Result<&'a str, VdfError
         if bytes[*pos] == b'"' {
             let end = *pos;
             *pos += 1;
-            let s = std::str::from_utf8(&bytes[start..end]).map_err(|_| VdfError::InvalidToken(start))?;
+            let s = std::str::from_utf8(&bytes[start..end])
+                .map_err(|_| VdfError::InvalidToken(start))?;
             return Ok(s);
         }
         *pos += 1;
@@ -135,20 +136,27 @@ mod tests {
 }
 "#;
         let parsed = parse_vdf(input).unwrap();
-        let root = parsed.first().and_then(|e| {
-            if let VdfValue::Object(ref obj) = e.value {
-                Some(obj.as_slice())
-            } else {
-                None
-            }
-        }).unwrap();
-        let folder0 = root.iter().find(|e| e.key == "0").and_then(|e| {
-            if let VdfValue::Object(ref obj) = e.value {
-                Some(obj.as_slice())
-            } else {
-                None
-            }
-        }).unwrap();
+        let root = parsed
+            .first()
+            .and_then(|e| {
+                if let VdfValue::Object(ref obj) = e.value {
+                    Some(obj.as_slice())
+                } else {
+                    None
+                }
+            })
+            .unwrap();
+        let folder0 = root
+            .iter()
+            .find(|e| e.key == "0")
+            .and_then(|e| {
+                if let VdfValue::Object(ref obj) = e.value {
+                    Some(obj.as_slice())
+                } else {
+                    None
+                }
+            })
+            .unwrap();
         assert_eq!(find_string(folder0, "path"), Some("C:\\\\SteamLibrary"));
     }
 }

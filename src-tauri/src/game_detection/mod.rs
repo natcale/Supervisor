@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-mod filter;
 mod epic;
+mod filter;
 mod gog;
 mod heroic;
 pub mod manual;

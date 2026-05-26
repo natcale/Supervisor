@@ -5,8 +5,8 @@
 //! Tauri command handlers — thin presentation layer over domain modules.
 
 mod collections;
-pub mod downloads;
 mod deploy;
+pub mod downloads;
 mod games;
 mod library;
 mod loadouts;
@@ -26,8 +26,8 @@ pub use plugins::*;
 pub use settings::*;
 pub use themes::*;
 
-use crate::ingest::IngestedMod;
 use crate::errors::{AppError, UserFacingIssue};
+use crate::ingest::IngestedMod;
 use crate::library::GameLibrary;
 use std::path::PathBuf;
 use std::sync::Mutex;
@@ -48,7 +48,10 @@ pub(crate) fn app_data(app: &tauri::AppHandle) -> Result<PathBuf, UserFacingIssu
         .map_err(|e| AppError::user(e.to_string()).to_user_issue())
 }
 
-pub(crate) fn staging_dir_for(app: &tauri::AppHandle, game_id: &str) -> Result<PathBuf, UserFacingIssue> {
+pub(crate) fn staging_dir_for(
+    app: &tauri::AppHandle,
+    game_id: &str,
+) -> Result<PathBuf, UserFacingIssue> {
     let data = app_data(app)?;
     let settings = crate::settings::load_settings(&data).map_err(|e| e.to_user_issue())?;
     let dir = crate::settings::game_staging_dir(&data, &settings, game_id);
@@ -56,7 +59,10 @@ pub(crate) fn staging_dir_for(app: &tauri::AppHandle, game_id: &str) -> Result<P
     Ok(dir)
 }
 
-pub fn configure_runtime_from_settings(app: &tauri::AppHandle, settings: &crate::settings::AppSettings) {
+pub fn configure_runtime_from_settings(
+    app: &tauri::AppHandle,
+    settings: &crate::settings::AppSettings,
+) {
     let enabled = settings.developer_tools;
     for label in ["main", "onboarding"] {
         let Some(window) = app.get_webview_window(label) else {
@@ -89,7 +95,8 @@ pub(crate) fn persist_ingested(
     game_id: &str,
     ingested: &[IngestedMod],
 ) -> Result<GameLibrary, UserFacingIssue> {
-    let mut library = crate::library::get_library(app_data, game_id).map_err(|e| e.to_user_issue())?;
+    let mut library =
+        crate::library::get_library(app_data, game_id).map_err(|e| e.to_user_issue())?;
     for entry in ingested {
         let lib_mod = crate::ingest::ingested_to_library(entry);
         if let Some(existing) = library.mods.iter_mut().find(|m| m.id == lib_mod.id) {
@@ -210,7 +217,9 @@ pub(crate) fn launch_detected_game(
         return open_target(exe);
     }
 
-    Err(AppError::user("Supervisor could not find a way to launch this game."))
+    Err(AppError::user(
+        "Supervisor could not find a way to launch this game.",
+    ))
 }
 
 fn manifest_has_redmod(app_data: &PathBuf, game_id: &str) -> bool {
@@ -218,10 +227,7 @@ fn manifest_has_redmod(app_data: &PathBuf, game_id: &str) -> bool {
     let Ok(Some(manifest)) = crate::deploy::manifest::read_manifest(&path) else {
         return false;
     };
-    manifest
-        .targets
-        .iter()
-        .any(|t| t.mod_type == "cp77_redmod")
+    manifest.targets.iter().any(|t| t.mod_type == "cp77_redmod")
 }
 
 fn bethesda_script_extender(game_root: &std::path::Path, profile_id: &str) -> Option<PathBuf> {
@@ -314,7 +320,9 @@ pub(crate) fn open_path_in_shell(path: &PathBuf) -> crate::errors::AppResult<()>
     #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
     {
         let _ = path;
-        Err(AppError::user("Opening folders is not supported on this platform yet."))
+        Err(AppError::user(
+            "Opening folders is not supported on this platform yet.",
+        ))
     }
 }
 
@@ -355,6 +363,8 @@ pub(crate) fn open_target(target: &str) -> crate::errors::AppResult<()> {
     #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
     {
         let _ = target;
-        Err(AppError::user("Launching games is not supported on this platform yet."))
+        Err(AppError::user(
+            "Launching games is not supported on this platform yet.",
+        ))
     }
 }

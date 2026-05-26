@@ -46,10 +46,7 @@ fn detect_gog_windows(settings: &AppSettings, include_all: bool) -> AppResult<Ve
             if !install.is_dir() {
                 continue;
             }
-            let install_dir = install
-                .file_name()
-                .and_then(|n| n.to_str())
-                .unwrap_or("");
+            let install_dir = install.file_name().and_then(|n| n.to_str()).unwrap_or("");
             if !include_all
                 && !passes_moddable_filter(
                     settings,

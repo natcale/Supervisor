@@ -125,7 +125,10 @@ pub fn selected_option_blocks(xml: &str, selections: &[String]) -> Vec<String> {
 
     if !flat_options.is_empty() {
         for sel in selections {
-            if let Some(idx) = sel.strip_prefix("opt-").and_then(|s| s.parse::<usize>().ok()) {
+            if let Some(idx) = sel
+                .strip_prefix("opt-")
+                .and_then(|s| s.parse::<usize>().ok())
+            {
                 if let Some(block) = flat_options.get(idx) {
                     blocks.push(block.clone());
                 }
@@ -140,9 +143,17 @@ pub fn selected_option_blocks(xml: &str, selections: &[String]) -> Vec<String> {
             .iter()
             .find(|s| s.starts_with("step-") || s.starts_with("opt-"));
         let sel_id = sel.cloned().unwrap_or_else(|| format!("opt-{opt_idx}"));
-        if let Some(idx) = sel_id.strip_prefix("opt-").and_then(|s| s.parse::<usize>().ok()) {
+        if let Some(idx) = sel_id
+            .strip_prefix("opt-")
+            .and_then(|s| s.parse::<usize>().ok())
+        {
             let install_steps = extract_tags(xml, "installStep");
-            if let Some(step_block) = install_steps.get(step.id.strip_prefix("step-").and_then(|s| s.parse().ok()).unwrap_or(0)) {
+            if let Some(step_block) = install_steps.get(
+                step.id
+                    .strip_prefix("step-")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0),
+            ) {
                 let plugins: Vec<_> = extract_tags(step_block, "plugin");
                 if let Some(plugin) = plugins.get(idx) {
                     blocks.push(plugin.clone());
@@ -153,7 +164,10 @@ pub fn selected_option_blocks(xml: &str, selections: &[String]) -> Vec<String> {
     }
 
     if blocks.is_empty() && !selections.is_empty() {
-        if let Some(idx) = selections[0].strip_prefix("opt-").and_then(|s| s.parse::<usize>().ok()) {
+        if let Some(idx) = selections[0]
+            .strip_prefix("opt-")
+            .and_then(|s| s.parse::<usize>().ok())
+        {
             if let Some(block) = flat_options.get(idx) {
                 blocks.push(block.clone());
             }

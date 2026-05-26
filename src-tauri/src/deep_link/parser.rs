@@ -28,7 +28,11 @@ pub fn parse_nxm_url(raw: &str) -> Option<NxmPayload> {
         return Some(NxmPayload::OAuthCallback(NxmOAuthCallback { code, state }));
     }
 
-    let segments: Vec<&str> = path.trim_start_matches('/').split('/').filter(|s| !s.is_empty()).collect();
+    let segments: Vec<&str> = path
+        .trim_start_matches('/')
+        .split('/')
+        .filter(|s| !s.is_empty())
+        .collect();
 
     // nxm://{domain}/mods/{modId}/files/{fileId}
     if segments.len() >= 4 && segments[0] == "mods" && segments[2] == "files" {

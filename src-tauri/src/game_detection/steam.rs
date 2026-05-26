@@ -5,8 +5,8 @@
 
 use crate::errors::{AppError, AppResult};
 use crate::game_detection::filter::{has_mod_markers, is_playable_steam_app};
-use crate::game_detection::types::{DetectedGame, GamePlatform};
 use crate::game_detection::passes_moddable_filter;
+use crate::game_detection::types::{DetectedGame, GamePlatform};
 use crate::games::{nexus_domain_for_steam, profile_id_for_steam};
 use crate::settings::AppSettings;
 use crate::vdf::{find_string, parse_vdf, VdfValue};
@@ -18,7 +18,10 @@ use winreg::enums::*;
 #[cfg(windows)]
 use winreg::RegKey;
 
-pub fn detect_steam_games(settings: &AppSettings, include_all: bool) -> AppResult<Vec<DetectedGame>> {
+pub fn detect_steam_games(
+    settings: &AppSettings,
+    include_all: bool,
+) -> AppResult<Vec<DetectedGame>> {
     let mut libraries = Vec::new();
 
     #[cfg(windows)]
@@ -121,9 +124,14 @@ fn parse_library_folders(content: &str) -> Vec<PathBuf> {
     paths
 }
 
-fn parse_app_manifest(path: &Path, settings: &AppSettings, include_all: bool) -> AppResult<DetectedGame> {
+fn parse_app_manifest(
+    path: &Path,
+    settings: &AppSettings,
+    include_all: bool,
+) -> AppResult<DetectedGame> {
     let content = fs::read_to_string(path).map_err(AppError::Io)?;
-    let parsed = parse_vdf(&content).map_err(|e| AppError::user(format!("Invalid manifest: {e}")))?;
+    let parsed =
+        parse_vdf(&content).map_err(|e| AppError::user(format!("Invalid manifest: {e}")))?;
 
     let root = parsed
         .first()
@@ -137,14 +145,18 @@ fn parse_app_manifest(path: &Path, settings: &AppSettings, include_all: bool) ->
         .ok_or_else(|| AppError::user("Manifest missing AppState"))?;
 
     let app_id = find_string(root, "appid").unwrap_or_default().to_string();
-    let name = find_string(root, "name").unwrap_or("Unknown Steam Game").to_string();
+    let name = find_string(root, "name")
+        .unwrap_or("Unknown Steam Game")
+        .to_string();
     let install_dir = find_string(root, "installdir").unwrap_or_default();
     let state_flags = find_string(root, "StateFlags").unwrap_or("0");
     if state_flags != "4" {
         return Err(AppError::user("Game not fully installed"));
     }
 
-    let steamapps = path.parent().ok_or_else(|| AppError::user("Invalid path"))?;
+    let steamapps = path
+        .parent()
+        .ok_or_else(|| AppError::user("Invalid path"))?;
     let install_path = steamapps.join("common").join(&install_dir);
     if !install_path.is_dir() {
         return Err(AppError::user("Install folder missing"));

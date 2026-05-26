@@ -77,10 +77,7 @@ pub fn add_manual_game(
             .to_string()
     });
 
-    let id = format!(
-        "manual-{}",
-        uuid::Uuid::new_v4().simple().to_string()
-    );
+    let id = format!("manual-{}", uuid::Uuid::new_v4().simple().to_string());
 
     let executable = find_executable(&path);
     let data_path = infer_data_path(&path);

@@ -108,7 +108,11 @@ pub fn remove_mod(
     Ok(library)
 }
 
-pub fn reorder_mods(app_data: &Path, game_id: &str, mod_ids: Vec<String>) -> AppResult<GameLibrary> {
+pub fn reorder_mods(
+    app_data: &Path,
+    game_id: &str,
+    mod_ids: Vec<String>,
+) -> AppResult<GameLibrary> {
     let mut library = store::load_library(app_data, game_id)?;
     let mut reordered = Vec::with_capacity(library.mods.len());
     for id in &mod_ids {

@@ -127,7 +127,9 @@ pub fn resolve_theme_dir(
 ) -> AppResult<std::path::PathBuf> {
     let theme_id = theme_id.trim();
     if theme_id.is_empty() || theme_id == "default" {
-        return Err(AppError::user("Cannot resolve directory for the default theme."));
+        return Err(AppError::user(
+            "Cannot resolve directory for the default theme.",
+        ));
     }
 
     let user_dir = theme_dir(app_data, theme_id);
@@ -211,8 +213,8 @@ fn load_theme_at_dir(dir: &Path, theme_id: &str) -> AppResult<LoadedTheme> {
             )));
         }
         let raw = std::fs::read_to_string(&path).map_err(AppError::Io)?;
-        let partial: ThemeLayoutConfig =
-            serde_json::from_str(&raw).map_err(|e| AppError::user(format!("Invalid layout {rel}: {e}")))?;
+        let partial: ThemeLayoutConfig = serde_json::from_str(&raw)
+            .map_err(|e| AppError::user(format!("Invalid layout {rel}: {e}")))?;
         layouts.slots.extend(partial.slots);
     }
 
@@ -234,8 +236,8 @@ fn load_theme_at_dir(dir: &Path, theme_id: &str) -> AppResult<LoadedTheme> {
 }
 
 pub fn parse_manifest(raw: &str) -> AppResult<ThemeManifest> {
-    let manifest: ThemeManifest =
-        serde_yaml::from_str(raw).map_err(|e| AppError::user(format!("Invalid theme.yaml: {e}")))?;
+    let manifest: ThemeManifest = serde_yaml::from_str(raw)
+        .map_err(|e| AppError::user(format!("Invalid theme.yaml: {e}")))?;
     if manifest.id.trim().is_empty() {
         return Err(AppError::user("theme.yaml must include a non-empty id."));
     }
@@ -272,7 +274,10 @@ pub fn sanitize_css(css: &str, theme_root_label: &str) -> AppResult<String> {
         if let Some(idx) = line.to_lowercase().find("url(") {
             let rest = &line[idx + 4..];
             let trimmed = rest.trim_start();
-            if trimmed.starts_with("http://") || trimmed.starts_with("https://") || trimmed.starts_with("//") {
+            if trimmed.starts_with("http://")
+                || trimmed.starts_with("https://")
+                || trimmed.starts_with("//")
+            {
                 return Err(AppError::user(format!(
                     "Theme CSS in {theme_root_label} may only use relative asset URLs."
                 )));
@@ -395,7 +400,8 @@ pub fn default_theme() -> LoadedTheme {
 pub fn install_theme_archive(app_data: &Path, archive_path: &Path) -> AppResult<ThemeSummary> {
     ensure_themes_dir(app_data)?;
     let file = std::fs::File::open(archive_path).map_err(AppError::Io)?;
-    let mut archive = zip::ZipArchive::new(file).map_err(|e| AppError::user(format!("Invalid theme archive: {e}")))?;
+    let mut archive = zip::ZipArchive::new(file)
+        .map_err(|e| AppError::user(format!("Invalid theme archive: {e}")))?;
 
     let entry_names: Vec<String> = (0..archive.len())
         .map(|i| {
@@ -409,7 +415,9 @@ pub fn install_theme_archive(app_data: &Path, archive_path: &Path) -> AppResult<
 
     let mut manifest: Option<ThemeManifest> = None;
     for i in 0..archive.len() {
-        let mut entry = archive.by_index(i).map_err(|e| AppError::user(e.to_string()))?;
+        let mut entry = archive
+            .by_index(i)
+            .map_err(|e| AppError::user(e.to_string()))?;
         let rel = relative_archive_path(entry.name(), strip_prefix.as_deref());
         if rel.ends_with('/') {
             continue;
@@ -421,7 +429,8 @@ pub fn install_theme_archive(app_data: &Path, archive_path: &Path) -> AppResult<
             break;
         }
     }
-    let manifest = manifest.ok_or_else(|| AppError::user("Theme archive must contain theme.yaml."))?;
+    let manifest =
+        manifest.ok_or_else(|| AppError::user("Theme archive must contain theme.yaml."))?;
 
     let dest = theme_dir(app_data, &manifest.id);
     if dest.exists() {
@@ -430,7 +439,9 @@ pub fn install_theme_archive(app_data: &Path, archive_path: &Path) -> AppResult<
     std::fs::create_dir_all(&dest).map_err(AppError::Io)?;
 
     for i in 0..archive.len() {
-        let mut entry = archive.by_index(i).map_err(|e| AppError::user(e.to_string()))?;
+        let mut entry = archive
+            .by_index(i)
+            .map_err(|e| AppError::user(e.to_string()))?;
         let rel = relative_archive_path(entry.name(), strip_prefix.as_deref());
         if rel.ends_with('/') {
             continue;
@@ -575,10 +586,7 @@ mod tests {
             "example/tokens.css".into(),
             "example/layouts/shell.json".into(),
         ];
-        assert_eq!(
-            archive_strip_prefix(&entries),
-            Some("example/".into())
-        );
+        assert_eq!(archive_strip_prefix(&entries), Some("example/".into()));
         assert_eq!(
             relative_archive_path("example/layouts/shell.json", Some("example/")),
             "layouts/shell.json"

@@ -24,7 +24,10 @@ struct EpicManifest {
     launch_executable: Option<String>,
 }
 
-pub fn detect_epic_games(settings: &AppSettings, include_all: bool) -> AppResult<Vec<DetectedGame>> {
+pub fn detect_epic_games(
+    settings: &AppSettings,
+    include_all: bool,
+) -> AppResult<Vec<DetectedGame>> {
     let manifests_dir = epic_manifests_dir();
     let Some(dir) = manifests_dir else {
         return Ok(Vec::new());
@@ -47,10 +50,7 @@ pub fn detect_epic_games(settings: &AppSettings, include_all: bool) -> AppResult
             continue;
         }
 
-        let install_dir = install
-            .file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("");
+        let install_dir = install.file_name().and_then(|n| n.to_str()).unwrap_or("");
         let known = false;
 
         if !include_all
@@ -68,9 +68,9 @@ pub fn detect_epic_games(settings: &AppSettings, include_all: bool) -> AppResult
             continue;
         }
 
-        let executable = manifest.launch_executable.map(|exe| {
-            install.join(exe).to_string_lossy().into_owned()
-        });
+        let executable = manifest
+            .launch_executable
+            .map(|exe| install.join(exe).to_string_lossy().into_owned());
 
         let (profile_id, nexus_domain) = resolve_profile_for_detected_name(&manifest.display_name)
             .map(|(id, domain)| (Some(id.to_string()), Some(domain.to_string())))

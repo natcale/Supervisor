@@ -7,7 +7,10 @@ use crate::errors::AppResult;
 use crate::game_detection::types::DetectedGame;
 use crate::settings::AppSettings;
 
-pub fn detect_heroic_games(settings: &AppSettings, include_all: bool) -> AppResult<Vec<DetectedGame>> {
+pub fn detect_heroic_games(
+    settings: &AppSettings,
+    include_all: bool,
+) -> AppResult<Vec<DetectedGame>> {
     #[cfg(target_os = "linux")]
     {
         detect_heroic_linux(settings, include_all)
@@ -69,10 +72,7 @@ fn detect_heroic_linux(settings: &AppSettings, include_all: bool) -> AppResult<V
                 if !install.is_dir() {
                     continue;
                 }
-                let install_dir = install
-                    .file_name()
-                    .and_then(|n| n.to_str())
-                    .unwrap_or("");
+                let install_dir = install.file_name().and_then(|n| n.to_str()).unwrap_or("");
                 if !include_all
                     && !passes_moddable_filter(
                         settings,

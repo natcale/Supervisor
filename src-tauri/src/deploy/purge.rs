@@ -54,10 +54,7 @@ fn remove_manifest_targets(manifest: &DeployManifest) -> AppResult<PurgeResult> 
         }
         if !path.is_file() {
             skipped += 1;
-            errors.push(format!(
-                "Skipped non-file at \"{}\"",
-                path.display()
-            ));
+            errors.push(format!("Skipped non-file at \"{}\"", path.display()));
             continue;
         }
         match fs::remove_file(&path) {
@@ -81,16 +78,18 @@ pub struct DeployStateResponse {
     pub checked_at: u64,
 }
 
-pub fn refresh_deploy_state(app_data: &Path, game_id: &str) -> AppResult<Option<DeployStateResponse>> {
+pub fn refresh_deploy_state(
+    app_data: &Path,
+    game_id: &str,
+) -> AppResult<Option<DeployStateResponse>> {
     let state_file = state_path(app_data, game_id);
     let Some(mut state) = load_state(&state_file)? else {
         return Ok(None);
     };
 
     let fresh_report = crate::deploy::verify::verify_manifest(&state.manifest);
-    let drift_detected = !fresh_report.verified
-        || fresh_report.missing > 0
-        || fresh_report.mismatched > 0;
+    let drift_detected =
+        !fresh_report.verified || fresh_report.missing > 0 || fresh_report.mismatched > 0;
 
     state.report = fresh_report;
 

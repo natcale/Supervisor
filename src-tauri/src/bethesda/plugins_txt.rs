@@ -7,7 +7,7 @@
 use crate::deploy::DeployGameRequest;
 use crate::errors::{AppError, AppResult};
 use crate::game_detection::DetectedGame;
-use crate::games::{GameProfile, resolve_profile};
+use crate::games::{resolve_profile, GameProfile};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -48,7 +48,11 @@ pub fn read_plugins_txt(game: &DetectedGame) -> AppResult<Vec<String>> {
     Ok(parse_plugins_txt(&content))
 }
 
-pub fn write_plugins_txt(game: &DetectedGame, enabled: &[String], order: &[String]) -> AppResult<()> {
+pub fn write_plugins_txt(
+    game: &DetectedGame,
+    enabled: &[String],
+    order: &[String],
+) -> AppResult<()> {
     let Some(path) = plugins_txt_path(game) else {
         return Ok(());
     };
@@ -56,7 +60,8 @@ pub fn write_plugins_txt(game: &DetectedGame, enabled: &[String], order: &[Strin
         fs::create_dir_all(parent).map_err(AppError::Io)?;
     }
 
-    let enabled_set: std::collections::HashSet<_> = enabled.iter().map(|s| s.to_lowercase()).collect();
+    let enabled_set: std::collections::HashSet<_> =
+        enabled.iter().map(|s| s.to_lowercase()).collect();
     let mut lines = Vec::new();
 
     for name in order {
@@ -71,7 +76,9 @@ pub fn write_plugins_txt(game: &DetectedGame, enabled: &[String], order: &[Strin
     fs::write(&path, lines.join("\n") + "\n").map_err(AppError::Io)
 }
 
-pub fn plugin_states_from_txt(game: &DetectedGame) -> AppResult<std::collections::HashMap<String, bool>> {
+pub fn plugin_states_from_txt(
+    game: &DetectedGame,
+) -> AppResult<std::collections::HashMap<String, bool>> {
     let Some(path) = plugins_txt_path(game) else {
         return Ok(std::collections::HashMap::new());
     };

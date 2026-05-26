@@ -34,7 +34,8 @@ pub fn import_vortex_collection(
     path: String,
 ) -> Result<CollectionImportResult, UserFacingIssue> {
     let _ = app_data(&app)?;
-    let parsed = parse_collection_file(std::path::Path::new(&path)).map_err(|e| e.to_user_issue())?;
+    let parsed =
+        parse_collection_file(std::path::Path::new(&path)).map_err(|e| e.to_user_issue())?;
     Ok(CollectionImportResult {
         name: parsed.name,
         game_hint: parsed.game_hint,

@@ -2,7 +2,10 @@
  *  Copyright (c) Supervisor contributors. All rights reserved.
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-use crate::deploy::manifest::{read_manifest, write_manifest, DeployManifest, ManifestTarget, manifest_path, load_state, save_state, state_path};
+use crate::deploy::manifest::{
+    load_state, manifest_path, read_manifest, save_state, state_path, write_manifest,
+    DeployManifest, ManifestTarget,
+};
 use crate::deploy::targets::{apply_target, target_key, target_path};
 use crate::errors::{AppError, AppResult};
 use crate::hardlink::{remove_managed_link, same_file};
@@ -19,7 +22,10 @@ pub fn remove_targets(targets: &[ManifestTarget]) -> AppResult<usize> {
     Ok(removed)
 }
 
-fn remove_single_target(target: &ManifestTarget, supervisor_staging: Option<&Path>) -> AppResult<bool> {
+fn remove_single_target(
+    target: &ManifestTarget,
+    supervisor_staging: Option<&Path>,
+) -> AppResult<bool> {
     let deploy_path = target_path(target);
     if !deploy_path.is_file() {
         return Ok(false);
@@ -64,7 +70,10 @@ fn cleanup_empty_parents(path: &Path) {
     }
 }
 
-fn remove_targets_for_mod_removal(targets: &[ManifestTarget], staging_path: &str) -> AppResult<usize> {
+fn remove_targets_for_mod_removal(
+    targets: &[ManifestTarget],
+    staging_path: &str,
+) -> AppResult<usize> {
     let staging = Path::new(staging_path);
     let mut removed = 0usize;
     for target in targets {
@@ -145,11 +154,7 @@ pub fn sync_deployment(
     Ok((manifest.targets, removed, linked))
 }
 
-pub fn undeploy_mod_targets(
-    app_data: &Path,
-    game_id: &str,
-    mod_id: &str,
-) -> AppResult<usize> {
+pub fn undeploy_mod_targets(app_data: &Path, game_id: &str, mod_id: &str) -> AppResult<usize> {
     let path = manifest_path(app_data, game_id);
     let Some(mut manifest) = read_manifest(&path)? else {
         return Ok(0);
@@ -187,9 +192,10 @@ pub fn prune_deploy_manifest(
 
     let mod_ids: HashSet<String> = library.mods.iter().map(|m| m.id.clone()).collect();
     let staging_path = manifest.staging_path.clone();
-    let (stale, keep): (Vec<_>, Vec<_>) = manifest.targets.into_iter().partition(|t| {
-        !mod_ids.contains(&t.mod_id) || !Path::new(&t.source).is_file()
-    });
+    let (stale, keep): (Vec<_>, Vec<_>) = manifest
+        .targets
+        .into_iter()
+        .partition(|t| !mod_ids.contains(&t.mod_id) || !Path::new(&t.source).is_file());
 
     if stale.is_empty() {
         return Ok(());
@@ -209,7 +215,10 @@ pub fn prune_deploy_manifest(
     Ok(())
 }
 
-pub fn remove_orphan_redmod_folders(game_root: &Path, desired_slugs: &HashSet<String>) -> AppResult<()> {
+pub fn remove_orphan_redmod_folders(
+    game_root: &Path,
+    desired_slugs: &HashSet<String>,
+) -> AppResult<()> {
     let mods_dir = game_root.join("mods");
     if !mods_dir.is_dir() {
         return Ok(());

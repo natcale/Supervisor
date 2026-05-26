@@ -2,18 +2,14 @@
  *  Copyright (c) Supervisor contributors. All rights reserved.
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-use crate::deploy::manifest::{
-    PersistedDeployState, save_state, state_path,
-};
+use crate::deploy::manifest::{save_state, state_path, PersistedDeployState};
 use crate::deploy::requirements::{check_requirements, profile_mismatch_warnings};
 use crate::deploy::sync::{remove_orphan_redmod_folders, sync_deployment, undeploy_mod_targets};
 use crate::deploy::targets::{compute_desired_targets, ordered_enabled_ids};
 use crate::deploy::verify::{verify_manifest, DeployReport};
 use crate::diagnostics::ModManifest;
 use crate::errors::{AppError, AppResult};
-use crate::games::{
-    generic_profile, profile_by_id, GameProfile,
-};
+use crate::games::{generic_profile, profile_by_id, GameProfile};
 use crate::hardlink::check_same_partition;
 use crate::install::normalize_mod;
 use serde::{Deserialize, Serialize};
@@ -46,7 +42,11 @@ pub struct DeployResult {
     pub primary_mod_path: String,
 }
 
-pub fn deploy_game(app_data: &Path, request: &DeployGameRequest, verify_after: bool) -> AppResult<DeployResult> {
+pub fn deploy_game(
+    app_data: &Path,
+    request: &DeployGameRequest,
+    verify_after: bool,
+) -> AppResult<DeployResult> {
     let game_root = PathBuf::from(&request.game_dir);
     let staging = PathBuf::from(&request.staging_dir);
 
@@ -72,7 +72,10 @@ pub fn deploy_game(app_data: &Path, request: &DeployGameRequest, verify_after: b
             .filter(|i| i.id.starts_with("req-"))
             .collect();
         if let Some(issue) = req_issues.into_iter().next() {
-            return Err(AppError::user(format!("{} {}", issue.title, issue.explanation)));
+            return Err(AppError::user(format!(
+                "{} {}",
+                issue.title, issue.explanation
+            )));
         }
     }
 
@@ -185,12 +188,7 @@ fn run_post_deploy_hooks(
     }
 
     if profile.supports_plugins {
-        crate::bethesda::sync_plugins_for_deploy(
-            game_root,
-            profile,
-            request,
-            staging,
-        )?;
+        crate::bethesda::sync_plugins_for_deploy(game_root, profile, request, staging)?;
     }
 
     Ok(())
@@ -204,7 +202,9 @@ fn redmod_slugs_ordered(
     let mod_map: HashMap<_, _> = request.mods.iter().map(|m| (m.id.clone(), m)).collect();
     let mut slugs = Vec::new();
     for mod_id in ordered_enabled_ids(&request.mods, &request.enabled_ids) {
-        let Some(m) = mod_map.get(&mod_id) else { continue };
+        let Some(m) = mod_map.get(&mod_id) else {
+            continue;
+        };
         if m.files.is_empty() {
             continue;
         }
@@ -232,7 +232,9 @@ fn bg3_pak_names(
     let mod_map: HashMap<_, _> = request.mods.iter().map(|m| (m.id.clone(), m)).collect();
     let mut names = Vec::new();
     for mod_id in ordered_enabled_ids(&request.mods, &request.enabled_ids) {
-        let Some(m) = mod_map.get(&mod_id) else { continue };
+        let Some(m) = mod_map.get(&mod_id) else {
+            continue;
+        };
         if m.files.is_empty() {
             continue;
         }
@@ -281,7 +283,9 @@ pub fn run_preflight(
     let mut normalized_paths = Vec::new();
 
     for mod_id in ordered_enabled_ids(mods, enabled_ids) {
-        let Some(m) = mod_map.get(&mod_id) else { continue };
+        let Some(m) = mod_map.get(&mod_id) else {
+            continue;
+        };
         if m.files.is_empty() {
             continue;
         }

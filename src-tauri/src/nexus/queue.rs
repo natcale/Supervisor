@@ -119,7 +119,10 @@ impl DownloadQueue {
         let mut jobs = self.inner.lock().unwrap();
         let mut changed = false;
         if let Some(job) = jobs.iter_mut().find(|j| j.id == id) {
-            if matches!(job.status, DownloadStatus::Queued | DownloadStatus::Downloading) {
+            if matches!(
+                job.status,
+                DownloadStatus::Queued | DownloadStatus::Downloading
+            ) {
                 job.status = DownloadStatus::Cancelled;
                 job.updated_at = now_ts();
                 changed = true;
@@ -139,7 +142,9 @@ impl DownloadQueue {
                 && j.file_id == file_id
                 && matches!(
                     j.status,
-                    DownloadStatus::Queued | DownloadStatus::Downloading | DownloadStatus::Ingesting
+                    DownloadStatus::Queued
+                        | DownloadStatus::Downloading
+                        | DownloadStatus::Ingesting
                 )
         })
     }
@@ -213,7 +218,12 @@ fn job_key(job: &DownloadJob) -> (String, u64, u64) {
     (job.game_id.clone(), job.mod_id, job.file_id)
 }
 
-fn purge_inactive_duplicates_for(jobs: &mut Vec<DownloadJob>, game_id: &str, mod_id: u64, file_id: u64) {
+fn purge_inactive_duplicates_for(
+    jobs: &mut Vec<DownloadJob>,
+    game_id: &str,
+    mod_id: u64,
+    file_id: u64,
+) {
     jobs.retain(|j| {
         !(j.game_id == game_id
             && j.mod_id == mod_id
@@ -242,14 +252,14 @@ fn normalize_jobs(jobs: &mut Vec<DownloadJob>) {
                 best.insert(key, job);
             }
             Some(existing) => {
-                let keep_new = if is_active_status(&job.status) && !is_active_status(&existing.status)
-                {
-                    true
-                } else if is_active_status(&existing.status) && !is_active_status(&job.status) {
-                    false
-                } else {
-                    job.updated_at > existing.updated_at
-                };
+                let keep_new =
+                    if is_active_status(&job.status) && !is_active_status(&existing.status) {
+                        true
+                    } else if is_active_status(&existing.status) && !is_active_status(&job.status) {
+                        false
+                    } else {
+                        job.updated_at > existing.updated_at
+                    };
                 if keep_new {
                     best.insert(key, job);
                 }

@@ -41,7 +41,9 @@ pub fn read_manifest(path: &Path) -> AppResult<Option<DeployManifest>> {
         return Ok(None);
     }
     let content = fs::read_to_string(path).map_err(AppError::Io)?;
-    Ok(Some(serde_json::from_str(&content).map_err(AppError::Json)?))
+    Ok(Some(
+        serde_json::from_str(&content).map_err(AppError::Json)?,
+    ))
 }
 
 pub fn manifest_path(app_data: &Path, game_id: &str) -> PathBuf {
@@ -81,5 +83,7 @@ pub fn load_state(path: &Path) -> AppResult<Option<PersistedDeployState>> {
         return Ok(None);
     }
     let content = fs::read_to_string(path).map_err(AppError::Io)?;
-    Ok(Some(serde_json::from_str(&content).map_err(AppError::Json)?))
+    Ok(Some(
+        serde_json::from_str(&content).map_err(AppError::Json)?,
+    ))
 }

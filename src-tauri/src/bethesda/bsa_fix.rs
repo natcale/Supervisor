@@ -42,7 +42,12 @@ pub fn bsa_loose_files_advisory(game_root: &Path) -> Option<UserFacingIssue> {
             && e.path()
                 .extension()
                 .and_then(|x| x.to_str())
-                .is_some_and(|ext| !matches!(ext.to_ascii_lowercase().as_str(), "bsa" | "ba2" | "esm" | "esp" | "esl"))
+                .is_some_and(|ext| {
+                    !matches!(
+                        ext.to_ascii_lowercase().as_str(),
+                        "bsa" | "ba2" | "esm" | "esp" | "esl"
+                    )
+                })
     });
     if !has_loose {
         return None;

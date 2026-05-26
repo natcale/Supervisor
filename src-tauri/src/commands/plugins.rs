@@ -20,7 +20,10 @@ pub fn get_plugin_list(
     if !bethesda::profile_supports_plugins(profile) {
         return Vec::new();
     }
-    let pairs: Vec<_> = mods.iter().map(|m| (m.id.clone(), m.files.clone())).collect();
+    let pairs: Vec<_> = mods
+        .iter()
+        .map(|m| (m.id.clone(), m.files.clone()))
+        .collect();
     let mut plugins = bethesda::scan_plugins_from_mods(&pairs, &enabled_ids);
     if let Ok(states) = bethesda::plugin_states_from_txt(&game) {
         if !states.is_empty() {

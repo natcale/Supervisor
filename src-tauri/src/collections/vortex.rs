@@ -65,8 +65,8 @@ fn parse_collection_archive(path: &Path) -> AppResult<ParsedCollection> {
         if name.ends_with("collection.json") || name.ends_with("manifest.json") {
             let mut raw = String::new();
             entry.read_to_string(&mut raw).map_err(AppError::Io)?;
-            let manifest: CollectionManifest =
-                serde_json::from_str(&raw).map_err(|e| AppError::user(format!("Bad manifest: {e}")))?;
+            let manifest: CollectionManifest = serde_json::from_str(&raw)
+                .map_err(|e| AppError::user(format!("Bad manifest: {e}")))?;
             return Ok(ParsedCollection {
                 name: manifest
                     .name

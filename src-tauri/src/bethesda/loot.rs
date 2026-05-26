@@ -12,12 +12,10 @@ use std::process::Command;
 /// Basic LOOT-style sort: masters first, then alphabetical.
 /// Full LOOT CLI integration replaces this when loot is installed.
 pub fn sort_plugins(plugins: &mut [PluginEntry]) {
-    plugins.sort_by(|a, b| {
-        match (a.is_master, b.is_master) {
-            (true, false) => std::cmp::Ordering::Less,
-            (false, true) => std::cmp::Ordering::Greater,
-            _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
-        }
+    plugins.sort_by(|a, b| match (a.is_master, b.is_master) {
+        (true, false) => std::cmp::Ordering::Less,
+        (false, true) => std::cmp::Ordering::Greater,
+        _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
     });
 }
 
@@ -73,7 +71,11 @@ pub fn sort_plugins_with_loot(
         .map(|(i, p)| (p.name.to_lowercase(), i))
         .collect();
 
-    plugins.sort_by_key(|p| rank.get(&p.name.to_lowercase()).copied().unwrap_or(usize::MAX));
+    plugins.sort_by_key(|p| {
+        rank.get(&p.name.to_lowercase())
+            .copied()
+            .unwrap_or(usize::MAX)
+    });
     Ok(true)
 }
 
