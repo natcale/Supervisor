@@ -1,4 +1,11 @@
+This app is in beta, expect issues!
+Report them [here](https://github.com/natcale/Supervisor/issues).
+
 ![Supervisor](public/assets/media/banner.png)
+
+[![Windows](https://img.shields.io/badge/Windows%20release-Download-blue?style=flat-square&logo=github)](https://github.com/natcale/Supervisor/releases)
+![License](https://img.shields.io/github/license/natcale/Supervisor?style=flat-square)
+![version](https://img.shields.io/github/v/release/natcale/Supervisor?style=flat-square)
 
 ## Introduction
 
@@ -30,8 +37,6 @@ Supervisor is a cross-game mod manager and launcher for **Windows**. It detects 
 
 ![Supervisor](public/assets/media/feature1.png)
 ![Supervisor](public/assets/media/feature2.png)
-
-[![Windows Release](https://img.shields.io/badge/Windows%20release-Download-blue?logo=windows)](https://github.com/natcale/Supervisor/releases)
 
 ### Windows users (recommended)
 
