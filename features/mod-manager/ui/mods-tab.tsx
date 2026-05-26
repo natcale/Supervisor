@@ -20,7 +20,10 @@ import { ModDropzone } from "@/features/mod-manager/ui/mod-dropzone";
 import { DeployAdvisoryBanner } from "@/features/mod-manager/ui/deploy-advisory-banner";
 import { ModInfoPanel } from "@/features/mod-manager/ui/mod-info-panel";
 import { ModToolbar } from "@/features/mod-manager/ui/mod-toolbar";
-import { conflictModIdsFromIssues, ModTable } from "@/features/mod-manager/ui/mod-table";
+import {
+  conflictModIdsFromIssues,
+  ModTable,
+} from "@/features/mod-manager/ui/mod-table";
 import {
   loadModColumns,
   saveModColumns,
@@ -125,16 +128,17 @@ export function ModsTab({
   const [deployIssues, setDeployIssues] = useState<UserFacingIssue[]>([]);
   const lastSelectedRef = useRef<string | null>(null);
 
-  const { report, loading, blockingIssues, advisoryIssues, ready } = usePreflight({
-    game,
-    mods: queue.mods,
-    enabledIds: queue.enabledIds,
-    stagingDir: queue.stagingDir,
-    profileId: game.profileId,
-    deployPathOverride: queue.deployPathOverride,
-    conflictResolutions: queue.conflictResolutions,
-    enabled: true,
-  });
+  const { report, loading, blockingIssues, advisoryIssues, ready } =
+    usePreflight({
+      game,
+      mods: queue.mods,
+      enabledIds: queue.enabledIds,
+      stagingDir: queue.stagingDir,
+      profileId: game.profileId,
+      deployPathOverride: queue.deployPathOverride,
+      conflictResolutions: queue.conflictResolutions,
+      enabled: true,
+    });
 
   const conflictModIds = useMemo(
     () => conflictModIdsFromIssues(report.issues),
@@ -161,16 +165,20 @@ export function ModsTab({
   const filterCounts = useMemo(
     (): Partial<Record<ModFilter, number>> => ({
       enabled: queue.mods.filter((m) => queue.enabledIds.includes(m.id)).length,
-      disabled: queue.mods.filter((m) => !queue.enabledIds.includes(m.id)).length,
+      disabled: queue.mods.filter((m) => !queue.enabledIds.includes(m.id))
+        .length,
       conflicts: conflictModIds.size,
-      fomod: queue.mods.filter((m) => m.installState === "pendingFomod" || m.needsFomod).length,
+      fomod: queue.mods.filter(
+        (m) => m.installState === "pendingFomod" || m.needsFomod,
+      ).length,
       updates: updateCount,
     }),
     [queue.mods, queue.enabledIds, conflictModIds, updateCount],
   );
 
   const displayedMods = useMemo(
-    () => applyModFilter(queue.mods, modFilter, queue.enabledIds, conflictModIds),
+    () =>
+      applyModFilter(queue.mods, modFilter, queue.enabledIds, conflictModIds),
     [queue.mods, modFilter, queue.enabledIds, conflictModIds],
   );
 
@@ -189,7 +197,8 @@ export function ModsTab({
       const state = await getGameState(game.id);
       onModsUpdated(state.library.mods.map(libraryModToManifest));
     } catch (e) {
-      if (e && typeof e === "object" && "title" in e) setIssue(e as UserFacingIssue);
+      if (e && typeof e === "object" && "title" in e)
+        setIssue(e as UserFacingIssue);
       else console.error(e);
     } finally {
       setCheckingUpdates(false);
@@ -212,7 +221,8 @@ export function ModsTab({
         );
       }
     } catch (e) {
-      if (e && typeof e === "object" && "title" in e) setIssue(e as UserFacingIssue);
+      if (e && typeof e === "object" && "title" in e)
+        setIssue(e as UserFacingIssue);
       else console.error(e);
     } finally {
       setCheckingUpdates(false);
@@ -248,7 +258,9 @@ export function ModsTab({
           state.report.mismatched > 0;
         setDriftDetected(outOfSync || response.driftDetected);
         setDeployIssues(state.report.issues);
-        const when = new Date(state.manifest.deployedAt * 1000).toLocaleString();
+        const when = new Date(
+          state.manifest.deployedAt * 1000,
+        ).toLocaleString();
         setDeployStatus(
           state.report.verified
             ? `${state.report.linked} files verified · ${when}`
@@ -263,7 +275,7 @@ export function ModsTab({
       setSelectedIds((prev) => {
         const next = new Set(additive || range ? prev : []);
         if (range && lastSelectedRef.current) {
-          const ids = queue.mods.map((m) => m.id);
+          const ids = displayedMods.map((m) => m.id);
           const a = ids.indexOf(lastSelectedRef.current!);
           const b = ids.indexOf(modId);
           if (a >= 0 && b >= 0) {
@@ -281,7 +293,7 @@ export function ModsTab({
         return next;
       });
     },
-    [queue.mods],
+    [displayedMods],
   );
 
   const addFiles = async () => {
@@ -289,7 +301,9 @@ export function ModsTab({
     if (paths.length > 0) {
       const result = await ingestForGame(game.id, paths);
       onIngested(result.mods, result.stagingDir);
-      const pending = result.mods.find((m) => m.installState === "pendingFomod" || m.needsFomod);
+      const pending = result.mods.find(
+        (m) => m.installState === "pendingFomod" || m.needsFomod,
+      );
       if (pending?.slug) void openFomodWizard(pending);
     }
   };
@@ -309,7 +323,12 @@ export function ModsTab({
   const completeFomod = async (selections: string[]) => {
     if (!fomodTarget?.slug) return;
     try {
-      const updated = await applyFomod(game.id, fomodTarget.id, fomodTarget.slug, selections);
+      const updated = await applyFomod(
+        game.id,
+        fomodTarget.id,
+        fomodTarget.slug,
+        selections,
+      );
       onModsUpdated(queue.mods.map((m) => (m.id === updated.id ? updated : m)));
       onEnableMod(updated.id);
     } catch (e) {
@@ -338,7 +357,9 @@ export function ModsTab({
         setIssue(blockingIssues[0] ?? null);
         return;
       }
-      const requirementBlockers = report.issues.filter((i) => i.id.startsWith("req-"));
+      const requirementBlockers = report.issues.filter((i) =>
+        i.id.startsWith("req-"),
+      );
       if (!ignoreRequirements && requirementBlockers.length > 0) {
         setIssue(requirementBlockers[0] ?? null);
         return;
@@ -356,13 +377,16 @@ export function ModsTab({
       const enabledIds = enabledOverride ?? queue.enabledIds;
       const mods = modsOverride ?? queue.mods;
       const pendingFomod = mods.some(
-        (m) => enabledIds.includes(m.id) && (m.installState === "pendingFomod" || m.needsFomod),
+        (m) =>
+          enabledIds.includes(m.id) &&
+          (m.installState === "pendingFomod" || m.needsFomod),
       );
       if (pendingFomod) {
         setIssue({
           id: "pending-fomod",
           title: "FOMOD setup required",
-          explanation: "One or more enabled mods need installer options before deploy.",
+          explanation:
+            "One or more enabled mods need installer options before deploy.",
           impact: "Configure FOMOD options for pending mods.",
           choices: [],
         });
@@ -371,7 +395,10 @@ export function ModsTab({
 
       setDeploying(true);
       try {
-        const partition = await checkPartition(queue.stagingDir, game.installPath);
+        const partition = await checkPartition(
+          queue.stagingDir,
+          game.installPath,
+        );
         if (!partition.samePartition && partition.guidance) {
           setIssue(partition.guidance);
           return;
@@ -392,16 +419,26 @@ export function ModsTab({
         if (!appSettings?.autoDeployOnChange) {
           setIssue({
             id: "deploy-success",
-            title: result.report.verified ? "Deploy verified" : "Deploy completed with warnings",
+            title: result.report.verified
+              ? "Deploy verified"
+              : "Deploy completed with warnings",
             explanation: result.summary,
             impact: result.report.verified
               ? "Your enabled mods are linked into the game folder."
               : "Some files may need attention.",
-            choices: [{ id: "acknowledge", label: "Done", description: "Close", recommended: true }],
+            choices: [
+              {
+                id: "acknowledge",
+                label: "Done",
+                description: "Close",
+                recommended: true,
+              },
+            ],
           });
         }
       } catch (e) {
-        if (e && typeof e === "object" && "title" in e) setIssue(e as UserFacingIssue);
+        if (e && typeof e === "object" && "title" in e)
+          setIssue(e as UserFacingIssue);
       } finally {
         setDeploying(false);
       }
@@ -438,15 +475,27 @@ export function ModsTab({
     listen<{ gameId: string }>("deploy://started", (event) => {
       if (event.payload.gameId === game.id) setDeploying(true);
     }).then((un) => unsubs.push(un));
-    listen<{ gameId: string; summary?: string }>("deploy://completed", (event) => {
-      if (event.payload.gameId !== game.id) return;
-      if (event.payload.summary) setDeployStatus(event.payload.summary);
-      onDeployComplete();
-    }).then((un) => unsubs.push(un));
+    listen<{ gameId: string; summary?: string }>(
+      "deploy://completed",
+      (event) => {
+        if (event.payload.gameId !== game.id) return;
+        if (event.payload.summary) setDeployStatus(event.payload.summary);
+        onDeployComplete();
+      },
+    ).then((un) => unsubs.push(un));
     return () => unsubs.forEach((un) => un());
   }, [game.id, onDeployComplete, runDeploy]);
 
   const handleReorder = async (modIds: string[]) => {
+    const byId = new Map(queue.mods.map((m) => [m.id, m]));
+    const reordered = modIds
+      .map((id) => byId.get(id))
+      .filter((m): m is ModManifest => m !== undefined);
+    for (const mod of queue.mods) {
+      if (!modIds.includes(mod.id)) reordered.push(mod);
+    }
+    onModsReordered?.(reordered);
+
     try {
       const library = await reorderLibraryMods(game.id, modIds);
       const mods = library.mods.map(libraryModToManifest);
@@ -457,6 +506,8 @@ export function ModsTab({
       }
     } catch (e) {
       console.error(e);
+      onModsUpdated(queue.mods);
+      onModsReordered?.(queue.mods);
     }
   };
 
@@ -482,7 +533,8 @@ export function ModsTab({
           : "Nothing to purge",
       );
     } catch (e) {
-      if (e && typeof e === "object" && "title" in e) setIssue(e as UserFacingIssue);
+      if (e && typeof e === "object" && "title" in e)
+        setIssue(e as UserFacingIssue);
     } finally {
       setPurging(false);
     }
@@ -499,11 +551,14 @@ export function ModsTab({
       if (choiceId === "fix-bsa-timestamps") {
         void fixBsaTimestamps(game.installPath)
           .then((count) => {
-            setDeployStatus(`Updated timestamps on ${count} vanilla archive(s).`);
+            setDeployStatus(
+              `Updated timestamps on ${count} vanilla archive(s).`,
+            );
             setIssue(null);
           })
           .catch((e) => {
-            if (e && typeof e === "object" && "title" in e) setIssue(e as UserFacingIssue);
+            if (e && typeof e === "object" && "title" in e)
+              setIssue(e as UserFacingIssue);
           });
         return;
       }
@@ -514,7 +569,8 @@ export function ModsTab({
               id: "open-folder-failed",
               title: "Could not open game folder",
               explanation: err,
-              impact: "Check that the game path still exists in Settings → Games.",
+              impact:
+                "Check that the game path still exists in Settings → Games.",
               choices: [],
             });
             return;
@@ -545,9 +601,16 @@ export function ModsTab({
       }
       setIssue(null);
     },
-    [game.installPath, issue, onConflictChoice, onEnableMod, onIgnoreRequirements, onNavigate, runDeploy],
+    [
+      game.installPath,
+      issue,
+      onConflictChoice,
+      onEnableMod,
+      onIgnoreRequirements,
+      onNavigate,
+      runDeploy,
+    ],
   );
-
 
   const handleToggleColumn = (id: string) => {
     setColumns((prev) => {
@@ -565,7 +628,8 @@ export function ModsTab({
         void openFomodWizard(updated);
       }
     } catch (e) {
-      if (e && typeof e === "object" && "title" in e) setIssue(e as UserFacingIssue);
+      if (e && typeof e === "object" && "title" in e)
+        setIssue(e as UserFacingIssue);
       else console.error(e);
     }
   };
@@ -576,8 +640,10 @@ export function ModsTab({
         setIssue({
           id: "open-mod-folder-failed",
           title: "Mod folder unavailable",
-          explanation: "This mod has no staging folder name yet. Try reinstalling or refreshing the mod list.",
-          impact: "FOMOD mods must finish installation before their folder can be opened.",
+          explanation:
+            "This mod has no staging folder name yet. Try reinstalling or refreshing the mod list.",
+          impact:
+            "FOMOD mods must finish installation before their folder can be opened.",
           choices: [],
         });
         return;
@@ -588,7 +654,8 @@ export function ModsTab({
         setIssue({
           id: "open-mod-folder-failed",
           title: "Staging folder unknown",
-          explanation: "Supervisor has not loaded a staging path for this game yet.",
+          explanation:
+            "Supervisor has not loaded a staging path for this game yet.",
           impact: "Switch away from Mods and back, or restart the app.",
           choices: [],
         });
@@ -603,7 +670,8 @@ export function ModsTab({
           id: "open-mod-folder-failed",
           title: "Mod folder not found",
           explanation: err,
-          impact: "The mod may have been removed from staging. Reinstall the archive or purge and redeploy.",
+          impact:
+            "The mod may have been removed from staging. Reinstall the archive or purge and redeploy.",
           choices: [
             {
               id: "reinstall",
@@ -676,8 +744,12 @@ export function ModsTab({
           setModFilter("conflicts");
           setConflictsDismissed(false);
         }}
-        onOpenStaging={() => void openStagingFolder(game.id).catch(console.error)}
-        onOpenGameFolder={() => void openPath(game.installPath).catch(console.error)}
+        onOpenStaging={() =>
+          void openStagingFolder(game.id).catch(console.error)
+        }
+        onOpenGameFolder={() =>
+          void openPath(game.installPath).catch(console.error)
+        }
         onShowHistory={() =>
           setIssue(
             deployStatus
@@ -686,14 +758,28 @@ export function ModsTab({
                   title: "Deploy history",
                   explanation: deployStatus,
                   impact: "Your most recent deploy for this game.",
-                  choices: [{ id: "acknowledge", label: "Close", description: "", recommended: true }],
+                  choices: [
+                    {
+                      id: "acknowledge",
+                      label: "Close",
+                      description: "",
+                      recommended: true,
+                    },
+                  ],
                 }
               : {
                   id: "deploy-history-empty",
                   title: "No deploy history",
                   explanation: "You have not deployed mods for this game yet.",
                   impact: "Deploy mods to link them into your game folder.",
-                  choices: [{ id: "acknowledge", label: "Close", description: "", recommended: true }],
+                  choices: [
+                    {
+                      id: "acknowledge",
+                      label: "Close",
+                      description: "",
+                      recommended: true,
+                    },
+                  ],
                 },
           )
         }
@@ -703,7 +789,11 @@ export function ModsTab({
         updateCount={updateCount}
       />
 
-      <ModFilterBar active={modFilter} counts={filterCounts} onChange={setModFilter} />
+      <ModFilterBar
+        active={modFilter}
+        counts={filterCounts}
+        onChange={setModFilter}
+      />
 
       {!conflictsDismissed && conflictIssues.length > 0 && (
         <ConflictPanel
@@ -750,11 +840,11 @@ export function ModsTab({
       )}
 
       {driftDetected && deployIssues.length === 0 && (
-        <div className="shrink-0 border-b border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
+        <div className="shrink-0 border-b border-border px-2 py-1.5 text-sm text-warning">
           <p className="font-medium">Deploy drift detected</p>
           <p className="mt-0.5 text-text-secondary">
-            Files in your game folder no longer match the last deploy. Purge and redeploy from the
-            menu (⋮), or click Deploy.
+            Files in your game folder no longer match the last deploy. Purge and
+            redeploy from the menu (⋮), or click Deploy.
           </p>
         </div>
       )}
@@ -772,7 +862,9 @@ export function ModsTab({
           if (appSettings?.autoDeployOnChange) void runDeploy(nextEnabled);
         }}
         onDisableAll={() => {
-          const nextEnabled = queue.enabledIds.filter((id) => !selectedIds.has(id));
+          const nextEnabled = queue.enabledIds.filter(
+            (id) => !selectedIds.has(id),
+          );
           selectedIds.forEach((id) => {
             if (queue.enabledIds.includes(id)) onToggle(id);
           });
@@ -788,11 +880,18 @@ export function ModsTab({
       <div className="relative min-h-0 flex-1 flex flex-col overflow-hidden">
         {showPlugins && supportsPlugins ? (
           <div className="min-h-0 flex-1 overflow-y-auto p-4">
-            <PluginList game={game} mods={queue.mods} enabledIds={queue.enabledIds} />
+            <PluginList
+              game={game}
+              mods={queue.mods}
+              enabledIds={queue.enabledIds}
+            />
           </div>
         ) : (
           <ModTable
             mods={displayedMods}
+            libraryModCount={queue.mods.length}
+            viewFilter={modFilter}
+            libraryMods={queue.mods}
             enabledIds={queue.enabledIds}
             columns={columns}
             selectedIds={selectedIds}
@@ -806,6 +905,8 @@ export function ModsTab({
             onOpenFolder={handleOpenFolder}
             onReorder={(ids) => void handleReorder(ids)}
             globalFilter={searchQuery}
+            onClearGlobalFilter={() => setSearchQuery("")}
+            onClearViewFilter={() => setModFilter("all")}
           />
         )}
       </div>
@@ -845,7 +946,11 @@ export function ModsTab({
         />
       )}
 
-      <IssueModal issue={issue} onClose={() => setIssue(null)} onChoice={handleIssueChoice} />
+      <IssueModal
+        issue={issue}
+        onClose={() => setIssue(null)}
+        onChoice={handleIssueChoice}
+      />
     </div>
   );
 }

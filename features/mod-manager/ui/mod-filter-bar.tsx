@@ -4,7 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 "use client";
 
-export type ModFilter = "all" | "enabled" | "disabled" | "conflicts" | "fomod" | "updates";
+export type ModFilter =
+  | "all"
+  | "enabled"
+  | "disabled"
+  | "conflicts"
+  | "fomod"
+  | "updates";
 
 const FILTERS: { id: ModFilter; label: string }[] = [
   { id: "all", label: "All" },
@@ -23,7 +29,7 @@ type Props = {
 
 export function ModFilterBar({ active, counts, onChange }: Props) {
   return (
-    <div className="flex shrink-0 flex-wrap gap-1 border-b border-border px-2 py-1.5">
+    <div className="flex shrink-0 flex-wrap gap-1 border-b border-border px-1 py-1.5">
       {FILTERS.map(({ id, label }) => {
         const count = counts[id];
         const isActive = active === id;
@@ -32,7 +38,7 @@ export function ModFilterBar({ active, counts, onChange }: Props) {
             key={id}
             type="button"
             onClick={() => onChange(id)}
-            className={`rounded-full px-2.5 py-0.5 text-xs transition-colors ${
+            className={`rounded-lg px-2 py-0.5 text-sm transition-colors ${
               isActive
                 ? "bg-primary text-white"
                 : "text-text-muted hover:bg-panel-hover hover:text-text-secondary"
@@ -40,7 +46,11 @@ export function ModFilterBar({ active, counts, onChange }: Props) {
           >
             {label}
             {count !== undefined && count > 0 && (
-              <span className={`ml-1 ${isActive ? "opacity-90" : "opacity-70"}`}>({count})</span>
+              <span
+                className={`ml-1 ${isActive ? "opacity-90" : "opacity-70"}`}
+              >
+                ({count})
+              </span>
             )}
           </button>
         );
@@ -49,7 +59,14 @@ export function ModFilterBar({ active, counts, onChange }: Props) {
   );
 }
 
-export function applyModFilter<T extends { id: string; installState?: string; needsFomod?: boolean; nexus?: { updateAvailable?: boolean } }>(
+export function applyModFilter<
+  T extends {
+    id: string;
+    installState?: string;
+    needsFomod?: boolean;
+    nexus?: { updateAvailable?: boolean };
+  },
+>(
   mods: T[],
   filter: ModFilter,
   enabledIds: string[],
@@ -63,7 +80,9 @@ export function applyModFilter<T extends { id: string; installState?: string; ne
     case "conflicts":
       return mods.filter((m) => conflictModIds.has(m.id));
     case "fomod":
-      return mods.filter((m) => m.installState === "pendingFomod" || m.needsFomod);
+      return mods.filter(
+        (m) => m.installState === "pendingFomod" || m.needsFomod,
+      );
     case "updates":
       return mods.filter((m) => m.nexus?.updateAvailable);
     default:

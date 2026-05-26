@@ -21,7 +21,7 @@
   --statusbar: #181818;
   --statusbar-fg: #ffffff;
 
-  --text-primary: #d4d4d4;
+  --text-primary: #ffffff;
   --text-secondary: #9d9d9d;
   --text-muted: #6b6b6b;
   --text-disabled: #4a4a4a;
@@ -38,7 +38,7 @@
   --error: #f44747;
   --warning: #cca700;
   --success: #4ec9b0;
-  --info: #4a9eff;
+  --info: #0052cc;
 
   --input-bg: #3c3c3c;
   --input-border: #3c3c3c;
@@ -62,7 +62,7 @@
   --font-mono: "Lilex", "JetBrains Mono", monospace;
 
   --text-xs: 0.85rem;
-  --text-sm: 0.90rem;
+  --text-sm: 0.9rem;
   --text-base: 0.95rem;
   --text-md: 1rem;
   --text-lg: 1.1rem;
@@ -78,8 +78,8 @@
   --primary: #0059ff;
   --primary-hover: #3c80ff;
   --toolbar-bg: #0047cc;
-  --mod-enabled: #6ebe3f;
-  --mod-enabled-hover: #608a4f;
+  --mod-enabled: #68c954;
+  --mod-enabled-hover: #70b455;
   --table-header: #252525;
   --table-row-hover: #ffffff08;
 

@@ -5,7 +5,6 @@
 "use client";
 
 import type { UserFacingIssue } from "@/types";
-import { AlertTriangle, Info } from "lucide-react";
 
 type Props = {
   issues: UserFacingIssue[];
@@ -30,19 +29,17 @@ export function DeployAdvisoryBanner({ issues, onReview }: Props) {
   const primary = blocking[0] ?? informational[0];
   if (!primary) return null;
 
-  const Icon = blocking.length > 0 ? AlertTriangle : Info;
   const tone = blocking.length > 0 ? "warning" : "info";
 
   return (
     <div
       className={
         tone === "warning"
-          ? "shrink-0 border-b border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning"
-          : "shrink-0 border-b border-info/30 bg-info/10 px-3 py-2 text-xs text-info"
+          ? "shrink-0 border-b border-border px-2 py-1.5 text-sm text-warning"
+          : "shrink-0 border-b border-border px-2 py-1.5 text-sm text-text-primary"
       }
     >
       <div className="flex items-start gap-2">
-        <Icon size={14} className="mt-0.5 shrink-0" />
         <div className="min-w-0 flex-1">
           <p className="font-medium">{primary.title}</p>
           <p className="mt-0.5 text-text-secondary">{primary.explanation}</p>
