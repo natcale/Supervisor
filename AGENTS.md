@@ -47,6 +47,38 @@ cd src-tauri && cargo check
 - Only create git commits or push when the user explicitly asks.
 - Do not add markdown docs or tests unless requested or they meaningfully cover real behavior.
 
+### Commit messages
+
+When the user asks for a commit message (or you draft one for them to commit), use a **subject + body** format:
+
+1. **Subject line** — one line, imperative mood, ≤72 characters. Prefix with a scope when helpful (`fix(mod-manager):`, `feat(deploy):`, `refactor(shell):`). Summarize the change, not the implementation detail.
+2. **Blank line** after the subject.
+3. **Body** — one or more paragraphs explaining:
+   - **What was wrong or missing** (symptom, bad behavior, gap).
+   - **Why it mattered** (user impact, correctness, safety).
+   - **What the change does** (approach in plain language; avoid a file list unless small).
+
+Wrap body lines at ~72 characters. Write in complete sentences. Do not use bullet lists unless several independent fixes belong in one commit.
+
+**Example:**
+
+```
+fix(mod-manager): stabilize toolbar overflow and pointer-based load-order reorder
+
+The mod toolbar used flex-wrap with items-stretch, which pushed action
+buttons to the top when the row wrapped and broke layout at narrow widths.
+Measure primary actions with a ResizeObserver and move overflow items into
+a "more" menu so the bar stays on one aligned row.
+
+Load-order dragging used HTML5 DnD on table rows, which is unreliable in
+WebView2/Tauri: drops often never fired and reorder appeared to do nothing.
+Replace it with pointer capture on the grip handle, fix downward-move splice
+index math, and apply optimistic queue updates before persisting via
+reorder_library_mods.
+```
+
+Match recent `git log` scope prefixes when present. Prefer one logical change per commit; if the user will split work, offer one message per commit.
+
 ### Frontend (Next.js / React)
 
 - Read `node_modules/next/dist/docs/` before using Next.js APIs — this project uses Next.js 16 with breaking changes from older versions.
