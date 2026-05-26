@@ -106,13 +106,7 @@ fn template_for(entry: &ProfileEntry) -> (Vec<ModTypeDef>, MergeMode, Vec<Requir
         "mod_root" => (
             vec![mt("default", "mod", true, 10)],
             MergeMode::Flat,
-            vec![req(
-                "modengine2",
-                "ModEngine2",
-                "mod",
-                true,
-                true,
-            )],
+            vec![req("modengine2", "ModEngine2", "mod", true, true)],
             false,
         ),
         "hitman_smf" => (
@@ -130,6 +124,8 @@ fn template_for(entry: &ProfileEntry) -> (Vec<ModTypeDef>, MergeMode, Vec<Requir
         "subnautica" => (
             vec![
                 mt("bepinex", "BepInEx/plugins", true, 10),
+                mt("bepinex_tree", ".", true, 5),
+                mt("doorstop", ".", true, 1),
                 mt("qmod", "QMods", true, 20),
             ],
             MergeMode::Flat,
@@ -143,7 +139,11 @@ fn template_for(entry: &ProfileEntry) -> (Vec<ModTypeDef>, MergeMode, Vec<Requir
             false,
         ),
         "bepinex" => (
-            vec![mt("bepinex", "BepInEx/plugins", true, 10)],
+            vec![
+                mt("bepinex", "BepInEx/plugins", true, 10),
+                mt("bepinex_tree", ".", true, 5),
+                mt("doorstop", ".", true, 1),
+            ],
             MergeMode::Flat,
             vec![],
             false,
@@ -154,21 +154,33 @@ fn template_for(entry: &ProfileEntry) -> (Vec<ModTypeDef>, MergeMode, Vec<Requir
             vec![],
             false,
         ),
-        "unreal_pak" => {
-            let path = entry
+        "marvel_rivals" => {
+            let pak_path = entry
                 .mod_path
                 .as_deref()
-                .unwrap_or("Content/Paks/~mods");
+                .unwrap_or("MarvelGame/Marvel/Content/Paks/~mods");
             (
-                vec![mt("pak", path, true, 10)],
+                vec![
+                    mt("pak", pak_path, true, 5),
+                    mt("win64", "MarvelGame/Marvel/Binaries/Win64", false, 10),
+                ],
                 MergeMode::Flat,
                 vec![req(
                     "mods-folder",
                     "Paks ~mods folder",
-                    path,
+                    pak_path,
                     false,
                     true,
                 )],
+                false,
+            )
+        }
+        "unreal_pak" => {
+            let path = entry.mod_path.as_deref().unwrap_or("Content/Paks/~mods");
+            (
+                vec![mt("pak", path, true, 10)],
+                MergeMode::Flat,
+                vec![req("mods-folder", "Paks ~mods folder", path, false, true)],
                 false,
             )
         }
@@ -188,7 +200,10 @@ fn template_for(entry: &ProfileEntry) -> (Vec<ModTypeDef>, MergeMode, Vec<Requir
             false,
         ),
         other => {
-            eprintln!("Unknown profile engine '{other}' for '{}', using Data/", entry.id);
+            eprintln!(
+                "Unknown profile engine '{other}' for '{}', using Data/",
+                entry.id
+            );
             (
                 vec![mt("default", "Data", true, 10)],
                 MergeMode::Flat,
@@ -315,9 +330,8 @@ pub fn resolve_profile_for_detected_name(name: &str) -> Option<(&'static str, &'
 }
 
 pub fn mod_path_hint(domain: &str) -> Option<&str> {
-    profile_id_for_domain(domain).and_then(|id| {
-        profile_by_id(id).map(|p| p.default_mod_type().rel_path.as_str())
-    })
+    profile_id_for_domain(domain)
+        .and_then(|id| profile_by_id(id).map(|p| p.default_mod_type().rel_path.as_str()))
 }
 
 #[cfg(test)]
@@ -342,7 +356,10 @@ mod tests {
     fn hitman_uses_per_mod_folder_smf() {
         let hitman = profile_by_id("hitman3").expect("hitman3");
         assert_eq!(hitman.merge_mode, MergeMode::PerModFolder);
-        assert_eq!(hitman.default_mod_type().rel_path, "Simple Mod Framework/Mods");
+        assert_eq!(
+            hitman.default_mod_type().rel_path,
+            "Simple Mod Framework/Mods"
+        );
         assert_eq!(hitman.steam_app_ids.len(), 3);
     }
 
@@ -384,6 +401,24 @@ mod tests {
         );
         assert_eq!(profile_id_for_steam("1144200"), Some("readyornot"));
         assert_eq!(nexus_domain_for_steam("1144200"), Some("readyornot"));
+    }
+
+    #[test]
+    fn marvel_rivals_supports_pak_and_win64_targets() {
+        let mr = profile_by_id("marvelrivals").expect("marvelrivals");
+        assert!(mr.mod_types.iter().any(|t| t.id == "pak"));
+        assert!(mr.mod_types.iter().any(|t| t.id == "win64"));
+        assert_eq!(
+            mr.mod_type("win64").map(|t| t.rel_path.as_str()),
+            Some("MarvelGame/Marvel/Binaries/Win64")
+        );
+    }
+
+    #[test]
+    fn valheim_supports_bepinex_framework_targets() {
+        let valheim = profile_by_id("valheim").expect("valheim");
+        assert!(valheim.mod_types.iter().any(|t| t.id == "bepinex_tree"));
+        assert!(valheim.mod_types.iter().any(|t| t.id == "doorstop"));
     }
 
     #[test]

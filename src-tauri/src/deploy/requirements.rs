@@ -75,7 +75,10 @@ fn created_folder_issue(label: &str, path: &Path) -> UserFacingIssue {
     UserFacingIssue {
         id: String::new(),
         title: format!("Created {label}"),
-        explanation: format!("Supervisor created \"{}\" for mod hardlink.", path.display()),
+        explanation: format!(
+            "Supervisor created \"{}\" for mod hardlink.",
+            path.display()
+        ),
         impact: "You can install .pak mods into this folder.".into(),
         choices: vec![],
     }
@@ -103,6 +106,25 @@ fn smf_note_if_hitman(profile: &GameProfile) -> UserFacingIssue {
     }
 }
 
+fn is_marvel_rivals_mod_file(path: &str) -> bool {
+    let lower = path.to_lowercase();
+    if lower.ends_with(".pak")
+        || lower.ends_with(".ucas")
+        || lower.ends_with(".utoc")
+        || lower.ends_with(".dll")
+        || lower.ends_with(".asi")
+    {
+        return true;
+    }
+    lower.ends_with(".txt")
+        || lower.ends_with(".md")
+        || lower.ends_with(".url")
+        || lower.ends_with(".ini")
+        || lower.ends_with(".cfg")
+        || lower.ends_with(".log")
+        || lower.ends_with(".json")
+}
+
 pub fn profile_mismatch_warnings(
     profile: &GameProfile,
     normalized_paths: &[String],
@@ -110,10 +132,7 @@ pub fn profile_mismatch_warnings(
     if profile.id == "marvelrivals" {
         let bad: Vec<_> = normalized_paths
             .iter()
-            .filter(|p| {
-                let lower = p.to_lowercase();
-                !lower.ends_with(".pak") && !lower.ends_with(".ucas") && !lower.ends_with(".utoc")
-            })
+            .filter(|p| !is_marvel_rivals_mod_file(p))
             .take(3)
             .cloned()
             .collect();
@@ -122,15 +141,17 @@ pub fn profile_mismatch_warnings(
                 id: "profile-mismatch".into(),
                 title: "Some files don't look like Marvel Rivals mods".into(),
                 explanation: format!(
-                    "Marvel Rivals expects .pak mod files. Found: {}.",
+                    "Marvel Rivals content mods use .pak/.utoc/.ucas in Paks/~mods. \
+                     Loader patches (like the UTOC bypass) use .dll in Binaries/Win64. Found: {}.",
                     bad.join(", ")
                 ),
-                impact: "These files may be deployed to the wrong location or ignored by the game.".into(),
+                impact: "Unexpected files may be ignored by the game or need manual placement."
+                    .into(),
                 choices: vec![UserChoice {
                     id: "continue-anyway".into(),
-                    label: "Continue anyway".into(),
+                    label: "Deploy anyway".into(),
                     description: "Proceed with installation.".into(),
-                    recommended: false,
+                    recommended: true,
                 }],
             });
         }

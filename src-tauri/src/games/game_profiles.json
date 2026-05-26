@@ -22,7 +22,7 @@
   { "id": "hitman3", "name": "HITMAN World of Assassination", "steamAppIds": ["1659040", "863550", "236870"], "nexusDomains": ["hitman3", "hitman2", "hitman"], "engine": "hitman_smf" },
   { "id": "subnautica", "name": "Subnautica", "steamAppIds": ["526870"], "nexusDomains": ["subnautica"], "engine": "subnautica" },
   { "id": "subnauticabelowzero", "name": "Subnautica: Below Zero", "steamAppIds": ["848450"], "nexusDomains": ["subnauticabelowzero"], "engine": "subnautica" },
-  { "id": "marvelrivals", "name": "Marvel Rivals", "steamAppIds": ["2767030"], "nexusDomains": ["marvelrivals"], "engine": "unreal_pak", "modPath": "MarvelGame/Marvel/Content/Paks/~mods" },
+  { "id": "marvelrivals", "name": "Marvel Rivals", "steamAppIds": ["2767030"], "nexusDomains": ["marvelrivals"], "engine": "marvel_rivals", "modPath": "MarvelGame/Marvel/Content/Paks/~mods" },
   { "id": "stardewvalley", "name": "Stardew Valley", "steamAppIds": ["413150"], "nexusDomains": ["stardewvalley"], "engine": "stardew" },
   { "id": "doometernal", "name": "DOOM Eternal", "steamAppIds": ["782330"], "nexusDomains": ["doometernal"], "engine": "mod_path", "modPath": "base" },
   { "id": "bannerlord", "name": "Mount & Blade II: Bannerlord", "steamAppIds": ["261550"], "nexusDomains": ["mountandblade2bannerlord"], "engine": "mod_path", "modPath": "Modules" },
