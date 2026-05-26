@@ -15,7 +15,10 @@ use std::path::PathBuf;
 use tauri::{Emitter, Manager};
 
 #[tauri::command]
-pub fn check_partition(staging_dir: String, game_dir: String) -> Result<PartitionCheckResult, UserFacingIssue> {
+pub fn check_partition(
+    staging_dir: String,
+    game_dir: String,
+) -> Result<PartitionCheckResult, UserFacingIssue> {
     check_same_partition(&PathBuf::from(staging_dir), &PathBuf::from(game_dir))
         .map_err(|e| e.to_user_issue())
 }
@@ -59,28 +62,28 @@ pub fn deploy_game_mods(
         let _ = purge_deployment(&app_data, &request.game_id);
     }
 
+    let game_id = request.game_id.clone();
     let _ = app.emit(
         "deploy://started",
-        &serde_json::json!({ "gameId": request.game_id }),
+        &serde_json::json!({ "gameId": game_id }),
     );
 
-    let result = deploy_game(
-        &app_data,
-        &request,
-        settings.verify_after_deploy,
-    )
-    .map_err(|e| e.to_user_issue())?;
-
-    let _ = app.emit(
-        "deploy://completed",
-        &serde_json::json!({
-            "gameId": request.game_id,
-            "summary": result.summary,
-            "deployedFiles": result.deployed_files,
+    let result = deploy_game(&app_data, &request, settings.verify_after_deploy);
+    let payload = match &result {
+        Ok(deployed) => serde_json::json!({
+            "gameId": game_id,
+            "summary": deployed.summary,
+            "deployedFiles": deployed.deployed_files,
+            "success": true,
         }),
-    );
+        Err(_) => serde_json::json!({
+            "gameId": game_id,
+            "success": false,
+        }),
+    };
+    let _ = app.emit("deploy://completed", &payload);
 
-    Ok(result)
+    result.map_err(|e| e.to_user_issue())
 }
 
 #[tauri::command]

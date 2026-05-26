@@ -127,6 +127,12 @@ export function ModsTab({
   const [driftDetected, setDriftDetected] = useState(false);
   const [deployIssues, setDeployIssues] = useState<UserFacingIssue[]>([]);
   const lastSelectedRef = useRef<string | null>(null);
+  const deployInFlightRef = useRef(0);
+
+  const setDeployBusy = useCallback((delta: number) => {
+    deployInFlightRef.current = Math.max(0, deployInFlightRef.current + delta);
+    setDeploying(deployInFlightRef.current > 0);
+  }, []);
 
   const { report, loading, blockingIssues, advisoryIssues, ready } =
     usePreflight({
@@ -393,7 +399,7 @@ export function ModsTab({
         return;
       }
 
-      setDeploying(true);
+      setDeployBusy(1);
       try {
         const partition = await checkPartition(
           queue.stagingDir,
@@ -440,7 +446,7 @@ export function ModsTab({
         if (e && typeof e === "object" && "title" in e)
           setIssue(e as UserFacingIssue);
       } finally {
-        setDeploying(false);
+        setDeployBusy(-1);
       }
     },
     [
@@ -458,6 +464,7 @@ export function ModsTab({
       queue.stagingDir,
       ready,
       report.issues,
+      setDeployBusy,
     ],
   );
 
@@ -472,13 +479,12 @@ export function ModsTab({
         }
       });
     }).then((un) => unsubs.push(un));
-    listen<{ gameId: string }>("deploy://started", (event) => {
-      if (event.payload.gameId === game.id) setDeploying(true);
-    }).then((un) => unsubs.push(un));
     listen<{ gameId: string; summary?: string }>(
       "deploy://completed",
       (event) => {
         if (event.payload.gameId !== game.id) return;
+        deployInFlightRef.current = 0;
+        setDeploying(false);
         if (event.payload.summary) setDeployStatus(event.payload.summary);
         onDeployComplete();
       },
@@ -590,8 +596,11 @@ export function ModsTab({
         return;
       }
       if (choiceId === "continue-anyway") {
-        onIgnoreRequirements();
+        if (issue.id.startsWith("req-")) {
+          onIgnoreRequirements();
+        }
         setIssue(null);
+        void runDeploy();
         return;
       }
       if (choiceId.startsWith("enable-")) {
