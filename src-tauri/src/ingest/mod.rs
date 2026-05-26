@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 use crate::errors::{AppError, AppResult};
 use crate::install::{apply_fomod_selection, apply_install_chain, has_fomod, parse_fomod_config};
-use crate::library::{InstallState, LibraryMod, NexusMeta, now_ts};
+use crate::library::{now_ts, InstallState, LibraryMod, NexusMeta};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -53,10 +53,8 @@ pub fn ingest_paths(staging_root: &Path, paths: &[String]) -> AppResult<IngestRe
 
         if source.is_dir() {
             copy_dir_recursive(&source, &mod_root)?;
-        } else if is_zip(&source) {
-            extract_zip(&source, &mod_root)?;
-        } else if is_seven_zip(&source) {
-            extract_7z(&source, &mod_root)?;
+        } else if is_zip(&source) || is_seven_zip(&source) {
+            extract_archive(&source, &mod_root)?;
         } else {
             let file_name = source
                 .file_name()
@@ -126,7 +124,10 @@ pub fn finalize_fomod_mod(
     })
 }
 
-pub fn parse_fomod_for_slug(staging_root: &Path, slug: &str) -> AppResult<crate::install::FomodConfig> {
+pub fn parse_fomod_for_slug(
+    staging_root: &Path,
+    slug: &str,
+) -> AppResult<crate::install::FomodConfig> {
     let mod_root = staging_root.join(slug);
     let config_path = crate::install::find_module_config(&mod_root)
         .ok_or_else(|| AppError::user("FOMOD config not found"))?;
@@ -188,10 +189,7 @@ pub fn ingested_to_library(entry: &IngestedMod) -> LibraryMod {
 }
 
 fn slug_from_path(path: &Path) -> String {
-    let name = path
-        .file_stem()
-        .and_then(|s| s.to_str())
-        .unwrap_or("mod");
+    let name = path.file_stem().and_then(|s| s.to_str()).unwrap_or("mod");
     name.chars()
         .map(|c| if c.is_ascii_alphanumeric() { c } else { '-' })
         .collect::<String>()
@@ -213,6 +211,92 @@ fn is_seven_zip(path: &Path) -> bool {
             lower == "7z" || lower == "rar"
         })
         .unwrap_or(false)
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ArchiveKind {
+    Zip,
+    SevenZip,
+    Rar,
+}
+
+fn read_archive_header(path: &Path) -> AppResult<[u8; 8]> {
+    use std::io::Read;
+    let mut file = fs::File::open(path).map_err(AppError::Io)?;
+    let mut buf = [0u8; 8];
+    match file.read(&mut buf) {
+        Ok(0) => {
+            return Err(AppError::user(format!(
+                "Archive file is empty ({}). Try downloading again.",
+                path.display()
+            )));
+        }
+        Ok(n) => {
+            buf[n..].fill(0);
+        }
+        Err(e) => return Err(AppError::Io(e)),
+    }
+    Ok(buf)
+}
+
+fn detect_archive_kind(header: &[u8; 8]) -> Option<ArchiveKind> {
+    if header.starts_with(b"PK\x03\x04")
+        || header.starts_with(b"PK\x05\x06")
+        || header.starts_with(b"PK\x07\x08")
+    {
+        Some(ArchiveKind::Zip)
+    } else if header.starts_with(b"7z\xBC\xAF\x27\x1C") {
+        Some(ArchiveKind::SevenZip)
+    } else if header.starts_with(b"Rar!\x1A\x07") {
+        Some(ArchiveKind::Rar)
+    } else {
+        None
+    }
+}
+
+fn looks_like_download_error(header: &[u8; 8]) -> bool {
+    header.starts_with(b"<!")
+        || header.starts_with(b"<h")
+        || header.starts_with(b"<H")
+        || header.starts_with(b"{")
+}
+
+fn enhance_corrupt_archive_error(err: AppError, archive: &Path) -> AppError {
+    let msg = err.to_string();
+    if msg.contains("EOCD") || msg.contains("invalid Zip") {
+        AppError::user(format!(
+            "Could not read archive \"{}\": the file may be incomplete, corrupted, or not a ZIP \
+             despite its extension. Try downloading again from Nexus Mods.",
+            archive.display()
+        ))
+    } else {
+        err
+    }
+}
+
+fn extract_archive(archive: &Path, dest: &Path) -> AppResult<()> {
+    let header = read_archive_header(archive)?;
+    if looks_like_download_error(&header) {
+        return Err(AppError::user(
+            "Downloaded file is not a mod archive (got an error page instead). \
+             Try downloading again from Nexus Mods.",
+        ));
+    }
+
+    match detect_archive_kind(&header) {
+        Some(ArchiveKind::SevenZip) | Some(ArchiveKind::Rar) => extract_7z(archive, dest),
+        Some(ArchiveKind::Zip) => extract_zip(archive, dest)
+            .or_else(|_| extract_7z(archive, dest))
+            .map_err(|e| enhance_corrupt_archive_error(e, archive)),
+        None if is_zip(archive) => extract_zip(archive, dest)
+            .or_else(|_| extract_7z(archive, dest))
+            .map_err(|e| enhance_corrupt_archive_error(e, archive)),
+        None if is_seven_zip(archive) => extract_7z(archive, dest),
+        None => Err(AppError::user(format!(
+            "Unsupported archive format: {}",
+            archive.display()
+        ))),
+    }
 }
 
 fn parse_dependencies(mod_root: &Path) -> Vec<String> {
