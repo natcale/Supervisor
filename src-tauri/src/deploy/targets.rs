@@ -8,7 +8,6 @@ use crate::errors::AppResult;
 use crate::games::{mod_path_for_type, GameProfile};
 use crate::hardlink::hardlink_file;
 use crate::install::normalize_mod;
-use crate::root_builder::classify_root_files;
 use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -47,7 +46,9 @@ pub fn compute_desired_targets(
     let mut all_deploy_keys = Vec::new();
 
     for mod_id in ordered_enabled_ids(mods, enabled_ids) {
-        let Some(m) = mod_map.get(&mod_id) else { continue };
+        let Some(m) = mod_map.get(&mod_id) else {
+            continue;
+        };
         if m.files.is_empty() {
             continue;
         }
@@ -70,22 +71,6 @@ pub fn compute_desired_targets(
     let mut targets = Vec::new();
 
     for normalized in &all_normalized {
-        let mod_type_def = profile
-            .mod_type(&normalized.mod_type)
-            .unwrap_or_else(|| profile.default_mod_type());
-        let deploy_root = if let Some(path) = deploy_path_override.filter(|p| !p.is_empty()) {
-            game_root.join(path)
-        } else {
-            mod_path_for_type(&game_root.to_path_buf(), mod_type_def, &profile.id)
-        };
-        if mod_type_def.rel_path != "." && mod_type_def.rel_path != "mods" {
-            fs::create_dir_all(&deploy_root).map_err(crate::errors::AppError::Io)?;
-        }
-
-        let staging_paths: Vec<String> = normalized.files.iter().map(|f| f.source.clone()).collect();
-        let (root_entries, _) = classify_root_files(staging, &staging_paths);
-        let root_sources: HashSet<String> = root_entries.iter().map(|r| r.source.clone()).collect();
-
         for file in &normalized.files {
             if !winners
                 .get(&file.deploy_key())
@@ -96,8 +81,11 @@ pub fn compute_desired_targets(
             }
 
             let source = staging.join(&file.source);
+            let mod_type_def = profile
+                .mod_type(&file.mod_type)
+                .unwrap_or_else(|| profile.default_mod_type());
 
-            if root_sources.contains(&file.source) {
+            if file.is_root {
                 let target_name = Path::new(&file.deploy_rel)
                     .file_name()
                     .and_then(|n| n.to_str())
@@ -107,18 +95,29 @@ pub fn compute_desired_targets(
                     rel_path: target_name,
                     source: source.to_string_lossy().into_owned(),
                     mod_id: normalized.mod_id.clone(),
-                    mod_type: "root".into(),
+                    mod_type: file.mod_type.clone(),
                     deploy_root: game_root.to_string_lossy().into_owned(),
                 });
-            } else {
-                targets.push(ManifestTarget {
-                    rel_path: file.deploy_rel.clone(),
-                    source: source.to_string_lossy().into_owned(),
-                    mod_id: normalized.mod_id.clone(),
-                    mod_type: normalized.mod_type.clone(),
-                    deploy_root: deploy_root.to_string_lossy().into_owned(),
-                });
+                continue;
             }
+
+            let deploy_root = if let Some(path) = deploy_path_override.filter(|p| !p.is_empty()) {
+                game_root.join(path)
+            } else {
+                mod_path_for_type(&game_root.to_path_buf(), mod_type_def, &profile.id)
+            };
+
+            if mod_type_def.rel_path != "." && mod_type_def.rel_path != "mods" {
+                fs::create_dir_all(&deploy_root).map_err(crate::errors::AppError::Io)?;
+            }
+
+            targets.push(ManifestTarget {
+                rel_path: file.deploy_rel.clone(),
+                source: source.to_string_lossy().into_owned(),
+                mod_id: normalized.mod_id.clone(),
+                mod_type: file.mod_type.clone(),
+                deploy_root: deploy_root.to_string_lossy().into_owned(),
+            });
         }
     }
 
