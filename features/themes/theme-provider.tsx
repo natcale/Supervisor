@@ -16,6 +16,7 @@ import {
 import { loadActiveTheme, readThemeAsset, setActiveTheme } from "@/lib/api/themes";
 import { formatInvokeError } from "@/lib/errors";
 import { isTauri } from "@/lib/env";
+import { escapeCssSingleQuoted } from "@/lib/css-escape";
 import { clearThemeStyles, injectStyles } from "@/features/themes/theme-styles";
 import { listenSettingsChanged } from "@/lib/settings-events";
 import { mergeSettings } from "@/lib/settings-defaults";
@@ -39,7 +40,7 @@ async function buildFontFaces(theme: LoadedTheme): Promise<string> {
     const blob = new Blob([new Uint8Array(bytes)], { type: "font/woff2" });
     const url = URL.createObjectURL(blob);
     faces.push(
-      `@font-face { font-family: '${font.family.replace(/'/g, "\\'")}'; src: url('${url}') format('woff2'); font-weight: ${font.weight}; font-display: swap; }`,
+      `@font-face { font-family: '${escapeCssSingleQuoted(font.family)}'; src: url('${url}') format('woff2'); font-weight: ${font.weight}; font-display: swap; }`,
     );
   }
   return faces.join("\n");

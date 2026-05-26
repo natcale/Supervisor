@@ -2,6 +2,7 @@
  *  Copyright (c) Supervisor contributors. All rights reserved.
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import { escapeCssSingleQuoted } from "@/lib/css-escape";
 import type { LoadedTheme } from "@/types";
 
 export const STYLE_ID = "supervisor-theme-css";
@@ -41,7 +42,10 @@ export function injectStyles(theme: LoadedTheme, fontCss: string) {
   if (theme.css.css.includes("--font-sans") || theme.fonts.length > 0) {
     const primary = theme.fonts[0]?.family;
     if (primary) {
-      document.documentElement.style.setProperty("--font-sans", `'${primary.replace(/'/g, "\\'")}', system-ui, sans-serif`);
+      document.documentElement.style.setProperty(
+        "--font-sans",
+        `'${escapeCssSingleQuoted(primary)}', system-ui, sans-serif`,
+      );
     }
   }
 }
