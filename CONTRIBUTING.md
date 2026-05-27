@@ -68,6 +68,14 @@ bun run verify     # All of the above + lint + build
 
 Rust unit tests cover deep links, game profiles, detection filters, settings persistence, profile resolution, and theme validation. Frontend tests cover error formatting, settings merge defaults, theme CSS injection, and key UI helpers. See [docs/contributing/testing.md](docs/contributing/testing.md) for how to validate behavior without owning every game.
 
+## AI Policy
+
+AI tools can be used when contributing, but they don’t replace your responsibility. You still need to read through everything, make sure it makes sense, and confirm it actually works.
+
+This includes checking any code changes, especially things that affect existing behaviour, variables, or UI. Don’t assume it’s correct just because it runs or looks fine at first glance.
+
+Pull requests that feel unreviewed or low quality may be rejected.
+
 ## Adding a game profile
 
 1. Add an entry to `src-tauri/src/games/game_profiles.json` with `id`, `name`, `steamAppIds`, `nexusDomains`, and `engine` (or `modPath` for custom layouts).
