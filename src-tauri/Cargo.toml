@@ -1,6 +1,6 @@
 [package]
 name = "supervisor"
-version = "0.1.1-beta"
+version = "0.1.2-beta"
 description = "Global mod manager and launcher"
 authors = ["Supervisor"]
 license = "MIT"
