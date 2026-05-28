@@ -46,6 +46,11 @@ mod root_builder;
 
 mod vdf;
 
+mod about;
+
+#[doc(hidden)]
+pub mod testing;
+
 use commands::handle_argv;
 
 use nexus::DownloadQueue;
@@ -238,6 +243,7 @@ pub fn run() {
             commands::set_active_theme,
             commands::install_theme,
             commands::get_platform,
+            commands::show_about_dialog,
             commands::read_theme_asset,
             commands::open_themes_folder,
         ])

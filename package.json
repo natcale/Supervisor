@@ -1,6 +1,6 @@
 {
   "name": "supervisor",
-  "version": "0.1.1-beta",
+  "version": "0.1.2-beta",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "cd src-tauri && cargo test",
+    "test:deploy-flow": "cd src-tauri && cargo test deploy_flow -- --nocapture",
     "test:web": "vitest run",
     "verify": "bun run lint && bun run build && bun run test:web && bun run test",
     "sync-version": "node scripts/sync-version.mjs",
