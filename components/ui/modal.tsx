@@ -47,9 +47,9 @@ export function Modal({
           )}
         >
           {(title || description) && (
-            <div className="border-b border-border px-6 py-4 pr-12">
+            <div className="px-3 py-2">
               {title && (
-                <Dialog.Title className="text-base font-medium text-text-active">
+                <Dialog.Title className="text-md font-regular text-text-active">
                   {title}
                 </Dialog.Title>
               )}
@@ -67,10 +67,10 @@ export function Modal({
           )}
           {children}
           <Dialog.Close
-            className="absolute right-4 top-4 rounded-lg p-1 text-text-muted hover:bg-panel-hover hover:text-text-primary"
+            className="absolute right-2 top-2 rounded-lg p-1 text-text-muted hover:bg-panel-hover hover:text-text-primary"
             aria-label="Close"
           >
-            <X size={18} />
+            <X size={16} />
           </Dialog.Close>
         </Dialog.Content>
       </Dialog.Portal>
