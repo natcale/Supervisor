@@ -34,6 +34,7 @@ export const SETTINGS_DEFAULTS: AppSettings = {
   activeThemeId: "default",
   compactGameSidebar: false,
   compactGameSidebarHidden: false,
+  showStatusBar: true,
 };
 
 export function mergeSettings(raw: Partial<AppSettings>): AppSettings {

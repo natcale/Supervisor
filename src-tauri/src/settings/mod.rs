@@ -84,6 +84,8 @@ pub struct AppSettings {
     pub compact_game_sidebar: bool,
     #[serde(default)]
     pub compact_game_sidebar_hidden: bool,
+    #[serde(default = "default_true")]
+    pub show_status_bar: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub last_game_id: Option<String>,
     #[serde(default = "default_theme_id")]
@@ -150,6 +152,7 @@ impl Default for AppSettings {
             developer_tools: false,
             compact_game_sidebar: false,
             compact_game_sidebar_hidden: false,
+            show_status_bar: true,
             last_game_id: None,
             active_theme_id: default_theme_id(),
             nexus_api_key: None,

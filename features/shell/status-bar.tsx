@@ -5,6 +5,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getVersion } from "@tauri-apps/api/app";
+import { showAboutDialog } from "@/lib/api/app";
 import { getDeployState } from "@/lib/tauri";
 import { isTauri } from "@/lib/env";
 import { useDownloadQueue } from "@/features/downloads/model/use-download-queue";
@@ -31,7 +33,15 @@ export function StatusBar({
 }: Props) {
   const [deploySummary, setDeploySummary] = useState<string | null>(null);
   const [drift, setDrift] = useState(false);
+  const [appVersion, setAppVersion] = useState<string | null>(null);
   const { active: activeDownloads } = useDownloadQueue(game?.id);
+
+  useEffect(() => {
+    if (!isTauri()) return;
+    void getVersion()
+      .then((version) => setAppVersion(`v${version}`))
+      .catch(() => setAppVersion(null));
+  }, []);
 
   useEffect(() => {
     if (!isTauri() || !game) {
@@ -125,9 +135,17 @@ export function StatusBar({
         </StatusSegment>
       )}
 
-      <StatusSegment className={nxmStatus ? undefined : "ml-auto"} title="Deploy method: hardlink">
-        Hardlink deploy
-      </StatusSegment>
+      <StatusSegment title="Deploy method: hardlink">Hardlink deploy</StatusSegment>
+
+      {appVersion && (
+        <StatusSegment
+          className="ml-auto shrink-0"
+          title="About Supervisor"
+          onClick={() => void showAboutDialog()}
+        >
+          {appVersion}
+        </StatusSegment>
+      )}
     </footer>
   );
 }

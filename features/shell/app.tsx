@@ -176,15 +176,17 @@ function AppShell({
         )}
       </main>
 
-      <StatusBar
-        shellView={shellView}
-        game={selectedGame}
-        queue={currentQueue}
-        deployRefreshKey={deployRefreshKey}
-        onNavigate={setShellView}
-        nxmStatus={nxmStatus}
-        onClearNxmStatus={clearNxmStatus}
-      />
+      {(appSettings?.showStatusBar ?? true) && (
+        <StatusBar
+          shellView={shellView}
+          game={selectedGame}
+          queue={currentQueue}
+          deployRefreshKey={deployRefreshKey}
+          onNavigate={setShellView}
+          nxmStatus={nxmStatus}
+          onClearNxmStatus={clearNxmStatus}
+        />
+      )}
     </div>
   );
 }

@@ -157,6 +157,8 @@ export interface AppSettings {
   compactGameSidebar?: boolean;
   /** When true, hides the compact bar even if a theme requests it. */
   compactGameSidebarHidden?: boolean;
+  /** Show the bottom status bar (game, deploy, version). */
+  showStatusBar?: boolean;
 }
 
 export interface AppPathsInfo {

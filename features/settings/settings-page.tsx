@@ -468,29 +468,6 @@ export function SettingsPage({
               onChange={(checked) => void persist({ rememberLastGame: checked })}
             />
             <ToggleRow
-              label="Compact game bar"
-              description="Show a narrow game icon bar beside the main sidebar. Themes can suggest this too; you can override here."
-              checked={compactBarVisible}
-              onChange={(checked) =>
-                void persist({
-                  compactGameSidebar: checked,
-                  compactGameSidebarHidden: !checked,
-                })
-              }
-            />
-            <ToggleRow
-              label="Always show Plugins"
-              description="Keep the Plugins sidebar entry visible even for games without load-order plugin support."
-              checked={settings?.alwaysShowPlugins ?? false}
-              onChange={(checked) => void persist({ alwaysShowPlugins: checked })}
-            />
-            <ToggleRow
-              label="Compact mod list"
-              description="Use tighter rows in the mod library table."
-              checked={settings?.compactModList ?? false}
-              onChange={(checked) => void persist({ compactModList: checked })}
-            />
-            <ToggleRow
               label="Show profile warnings"
               description="Surface guidance when a game uses a generic profile or mismatched file types."
               checked={settings?.showProfileWarnings ?? true}
@@ -532,6 +509,38 @@ export function SettingsPage({
               )}
             </div>
             {themeStatus && <p className="text-xs text-text-muted">{themeStatus}</p>}
+            <div className="mt-4 border-t border-border pt-4">
+              <p className="mb-3 text-sm font-medium text-text-primary">Layout</p>
+              <ToggleRow
+                label="Show status bar"
+                description="Bottom bar with game, deploy info, and app version."
+                checked={settings?.showStatusBar ?? true}
+                onChange={(checked) => void persist({ showStatusBar: checked })}
+              />
+              <ToggleRow
+                label="Compact game bar"
+                description="Narrow game icon strip beside the sidebar. Themes can suggest this; you can override here."
+                checked={compactBarVisible}
+                onChange={(checked) =>
+                  void persist({
+                    compactGameSidebar: checked,
+                    compactGameSidebarHidden: !checked,
+                  })
+                }
+              />
+              <ToggleRow
+                label="Compact mod list"
+                description="Tighter rows in the mod library table."
+                checked={settings?.compactModList ?? false}
+                onChange={(checked) => void persist({ compactModList: checked })}
+              />
+              <ToggleRow
+                label="Always show Plugins"
+                description="Keep the Plugins sidebar entry visible for games without plugin load-order support."
+                checked={settings?.alwaysShowPlugins ?? false}
+                onChange={(checked) => void persist({ alwaysShowPlugins: checked })}
+              />
+            </div>
           </Section>
 
           <Section title="Nexus Mods">
@@ -642,7 +651,7 @@ export function SettingsPage({
             />
             <ToggleRow
               label="Ignore deploy requirements"
-              description="Skip BepInEx, SMF, and other prerequisite checks when deploying."
+              description="Skip BepInEx and other prerequisite checks when deploying."
               checked={settings?.ignoreDeployRequirements ?? false}
               onChange={(checked) => void persist({ ignoreDeployRequirements: checked })}
             />
