@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 use crate::errors::{UserChoice, UserFacingIssue};
-use crate::games::{GameProfile, MergeMode};
+use crate::games::GameProfile;
 use std::fs;
 use std::path::Path;
 
@@ -27,10 +27,6 @@ pub fn check_requirements(game_root: &Path, profile: &GameProfile) -> Vec<UserFa
         if !target.exists() {
             issues.push(missing_requirement_issue(req, &target, req.optional));
         }
-    }
-
-    if profile.merge_mode == MergeMode::PerModFolder {
-        issues.push(smf_note_if_hitman(profile));
     }
 
     issues.into_iter().filter(|i| !i.id.is_empty()).collect()
@@ -80,28 +76,6 @@ fn created_folder_issue(label: &str, path: &Path) -> UserFacingIssue {
             path.display()
         ),
         impact: "You can install .pak mods into this folder.".into(),
-        choices: vec![],
-    }
-}
-
-fn smf_note_if_hitman(profile: &GameProfile) -> UserFacingIssue {
-    if profile.id != "hitman3" {
-        return UserFacingIssue {
-            id: String::new(),
-            title: String::new(),
-            explanation: String::new(),
-            impact: String::new(),
-            choices: vec![],
-        };
-    }
-
-    UserFacingIssue {
-        id: "smf-apply-note".into(),
-        title: "SMF patch step is separate".into(),
-        explanation:
-            "Supervisor deploys mods into Simple Mod Framework/Mods/. After installing, run SMF's patch/apply step so the game loads your mods."
-                .into(),
-        impact: "Files will be linked correctly, but Hitman won't use them until SMF applies the patch.".into(),
         choices: vec![],
     }
 }

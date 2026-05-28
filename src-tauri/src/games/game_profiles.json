@@ -19,7 +19,6 @@
   { "id": "sekiro", "name": "Sekiro: Shadows Die Twice", "steamAppIds": ["814380"], "nexusDomains": ["sekiro"], "engine": "mod_root" },
   { "id": "darksouls3", "name": "Dark Souls III", "steamAppIds": ["374320"], "nexusDomains": ["darksouls3"], "engine": "mod_root" },
   { "id": "darksouls", "name": "Dark Souls", "steamAppIds": ["211420", "570940"], "nexusDomains": ["darksouls"], "engine": "mod_root" },
-  { "id": "hitman3", "name": "HITMAN World of Assassination", "steamAppIds": ["1659040", "863550", "236870"], "nexusDomains": ["hitman3", "hitman2", "hitman"], "engine": "hitman_smf" },
   { "id": "subnautica", "name": "Subnautica", "steamAppIds": ["526870"], "nexusDomains": ["subnautica"], "engine": "subnautica" },
   { "id": "subnauticabelowzero", "name": "Subnautica: Below Zero", "steamAppIds": ["848450"], "nexusDomains": ["subnauticabelowzero"], "engine": "subnautica" },
   { "id": "marvelrivals", "name": "Marvel Rivals", "steamAppIds": ["2767030"], "nexusDomains": ["marvelrivals"], "engine": "marvel_rivals", "modPath": "MarvelGame/Marvel/Content/Paks/~mods" },

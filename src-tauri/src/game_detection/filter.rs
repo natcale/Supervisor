@@ -71,7 +71,6 @@ const MOD_MARKERS: &[&str] = &[
     "BepInEx",
     "QMods",
     "mod",
-    "Simple Mod Framework",
     "MarvelGame/Marvel/Content/Paks/~mods",
     "archive/pc/mod",
     "Paks",

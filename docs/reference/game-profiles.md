@@ -25,7 +25,6 @@ Unknown games fall back to `generic-data` (`Data/` deploy).
 | `mods` | Witcher 3, RimWorld | `Mods/` |
 | `mod_root` | Elden Ring, Sekiro | `mod/` |
 | `cyberpunk` | Cyberpunk 2077 | `archive/pc/mod` |
-| `hitman_smf` | HITMAN WoA | `Simple Mod Framework/Mods/` |
 | `unreal_pak` | UE games with `.pak` | `…/Paks/~mods` |
 | `mod_path` | Custom | `modPath` field |
 

@@ -109,18 +109,6 @@ fn template_for(entry: &ProfileEntry) -> (Vec<ModTypeDef>, MergeMode, Vec<Requir
             vec![req("modengine2", "ModEngine2", "mod", true, true)],
             false,
         ),
-        "hitman_smf" => (
-            vec![mt("smf", "Simple Mod Framework/Mods", false, 10)],
-            MergeMode::PerModFolder,
-            vec![req(
-                "smf-installed",
-                "Simple Mod Framework",
-                "Simple Mod Framework",
-                false,
-                false,
-            )],
-            false,
-        ),
         "subnautica" => (
             vec![
                 mt("bepinex", "BepInEx/plugins", true, 10),
@@ -341,7 +329,7 @@ mod tests {
 
     #[test]
     fn loads_all_profiles_including_generic() {
-        assert!(all_profiles().len() >= 55);
+        assert!(all_profiles().len() >= 54);
         assert!(profile_by_id("generic-data").is_some());
     }
 
@@ -353,14 +341,10 @@ mod tests {
     }
 
     #[test]
-    fn hitman_uses_per_mod_folder_smf() {
-        let hitman = profile_by_id("hitman3").expect("hitman3");
-        assert_eq!(hitman.merge_mode, MergeMode::PerModFolder);
-        assert_eq!(
-            hitman.default_mod_type().rel_path,
-            "Simple Mod Framework/Mods"
-        );
-        assert_eq!(hitman.steam_app_ids.len(), 3);
+    fn kcd_uses_per_mod_folder_mods() {
+        let kcd = profile_by_id("kingdomcomdeliverance").expect("kingdomcomdeliverance");
+        assert_eq!(kcd.merge_mode, MergeMode::PerModFolder);
+        assert_eq!(kcd.default_mod_type().rel_path, "Mods");
     }
 
     #[test]
@@ -389,7 +373,7 @@ mod tests {
     fn summaries_exclude_generic_profile() {
         let summaries = all_profile_summaries();
         assert!(!summaries.iter().any(|s| s.id == "generic-data"));
-        assert!(summaries.len() >= 54);
+        assert!(summaries.len() >= 53);
     }
 
     #[test]

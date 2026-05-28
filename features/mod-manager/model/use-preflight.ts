@@ -75,7 +75,6 @@ export function usePreflight({
   const advisoryIssues = report.issues.filter(
     (i) =>
       i.id.startsWith("req-") ||
-      i.id.startsWith("smf-") ||
       i.id.startsWith("profile-") ||
       i.id.startsWith("type-") ||
       i.id.startsWith("bsa-") ||

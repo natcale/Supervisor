@@ -227,13 +227,7 @@ fn infer_data_path(install_path: &Path, domain: Option<&str>) -> Option<String> 
     }
 
     if has_mod_markers(install_path) {
-        for sub in [
-            "Data",
-            "Mods",
-            "BepInEx/plugins",
-            "mod",
-            "Simple Mod Framework/Mods",
-        ] {
+        for sub in ["Data", "Mods", "BepInEx/plugins", "mod"] {
             let p = install_path.join(sub);
             if p.is_dir() {
                 return Some(p.to_string_lossy().into_owned());

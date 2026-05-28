@@ -43,7 +43,6 @@ fn unwrap_single_top_folder(mod_root: &Path) -> AppResult<()> {
         "fomod",
         "qmods",
         "mods",
-        "simple mod framework",
         "marvelgame",
     ];
     if KEEP.iter().any(|k| inner_name == *k) {
