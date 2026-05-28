@@ -592,4 +592,18 @@ mod tests {
             "layouts/shell.json"
         );
     }
+
+    #[test]
+    fn bundled_grid_and_windows_95_are_loadable() {
+        let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../themes/bundled");
+        for id in ["grid", "windows-95"] {
+            let dir = root.join(id);
+            let loaded = load_theme_at_dir(&dir, id).unwrap_or_else(|e| panic!("{id}: {e}"));
+            assert_eq!(loaded.summary.id, id);
+        }
+        let summaries = collect_theme_summaries(&root).expect("bundled dir");
+        let ids: Vec<_> = summaries.iter().map(|s| s.id.as_str()).collect();
+        assert!(ids.contains(&"grid"), "expected grid in {ids:?}");
+        assert!(ids.contains(&"windows-95"), "expected windows-95 in {ids:?}");
+    }
 }

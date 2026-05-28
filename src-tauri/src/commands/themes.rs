@@ -22,6 +22,12 @@ fn persist_active_theme(
 }
 
 fn bundled_themes_dir(app: &tauri::AppHandle) -> Option<PathBuf> {
+    let dev = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../themes/bundled");
+    // `tauri dev` copies resources at build time; repo `themes/bundled` is fresher in debug.
+    if cfg!(debug_assertions) && dev.is_dir() {
+        return Some(dev);
+    }
+
     if let Ok(resource) = app.path().resource_dir() {
         let bundled = resource.join("themes/bundled");
         if bundled.is_dir() {
@@ -29,7 +35,6 @@ fn bundled_themes_dir(app: &tauri::AppHandle) -> Option<PathBuf> {
         }
     }
 
-    let dev = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../themes/bundled");
     dev.is_dir().then_some(dev)
 }
 

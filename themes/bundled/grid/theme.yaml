@@ -1,0 +1,11 @@
+id: grid
+name: Grid
+author: Supervisor
+description: Sharp Zed-inspired dark UI with flat panels, 1px borders, and no rounding
+apiVersion: 1
+minSupervisorVersion: "0.1.0"
+css:
+  - tokens.css
+  - theme.css
+layouts:
+  - layouts/shell.json

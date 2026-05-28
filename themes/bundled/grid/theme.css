@@ -1,0 +1,167 @@
+/* Grid — Zed-like: flat, bordered, zero radius */
+
+[data-theme-slot="shell.titlebar"] {
+  background: var(--titlebar);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border);
+}
+
+[data-theme-slot="shell.titlebar"] .text-text-secondary {
+  color: var(--text-secondary);
+}
+
+[data-theme-slot="shell.titlebar"] .titlebar-control {
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 0 !important;
+  margin-top: 0;
+  margin-right: 0;
+  width: 40px;
+}
+
+[data-theme-slot="shell.titlebar"] .titlebar-control:hover {
+  background: var(--panel-hover);
+  color: var(--text-primary);
+}
+
+[data-theme-slot="shell.titlebar"] .titlebar-control.close:hover {
+  background: var(--error);
+  color: #fff;
+}
+
+[data-theme-slot="shell.sidebar"] {
+  border-right: 1px solid var(--border);
+}
+
+[data-theme-slot="shell.statusbar"] {
+  border-top: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.01em;
+}
+
+[data-theme-slot="shell.compactBar"] {
+  border-left: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.bg-content-panel {
+  border: 1px solid var(--border);
+  border-radius: 0 !important;
+}
+
+.bg-panel,
+.bg-panel-secondary,
+.bg-sidebar,
+.bg-card {
+  border-color: var(--border);
+}
+
+button,
+input,
+select,
+textarea,
+[role="dialog"] > div {
+  border-radius: 0 !important;
+}
+
+.rounded,
+.rounded-sm,
+.rounded-md,
+.rounded-lg,
+.rounded-xl,
+.rounded-2xl,
+.rounded-tl-xl,
+.rounded-tr-xl,
+.rounded-bl-xl,
+.rounded-br-xl,
+.rounded-tl-lg,
+.rounded-tr-lg,
+.rounded-bl-lg,
+.rounded-br-lg {
+  border-radius: 0 !important;
+}
+
+button:not(.titlebar-control):not([class*="rounded-full"]) {
+  border: 1px solid var(--border);
+  box-shadow: none;
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
+}
+
+button:not(.titlebar-control):not([class*="rounded-full"]):hover {
+  background: var(--button-secondary-hover);
+  border-color: var(--border-focus);
+}
+
+button.bg-accent,
+button[class*="bg-accent"] {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent-fg) !important;
+}
+
+button.bg-accent:hover {
+  background: var(--accent-hover) !important;
+  border-color: var(--accent-hover) !important;
+}
+
+input,
+select,
+textarea {
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 1px solid var(--border-focus);
+  outline-offset: 0;
+}
+
+.bg-toolbar {
+  background: var(--toolbar-bg) !important;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary) !important;
+}
+
+.bg-toolbar button {
+  border: 1px solid var(--border) !important;
+  color: var(--text-secondary) !important;
+}
+
+.bg-toolbar button:hover {
+  background: var(--panel-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+.bg-mod-enabled,
+button.bg-mod-enabled {
+  background: var(--mod-enabled) !important;
+  border-color: var(--mod-enabled) !important;
+  color: #0a0a0a !important;
+}
+
+.bg-table-header {
+  background: var(--table-header) !important;
+  border-bottom: 1px solid var(--border);
+}
+
+tr:hover td,
+.hover\:bg-table-row-hover:hover {
+  background: var(--table-row-hover) !important;
+}
+
+[data-theme-slot="shell.sidebar"] button[aria-current="page"],
+[data-theme-slot="shell.sidebar"] button[data-active="true"] {
+  background: var(--panel-active);
+  border-left: 2px solid var(--accent);
+}
+
+[data-theme-slot="shell.downloadPopup"] {
+  border: 1px solid var(--border);
+  border-radius: 0 !important;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 45%);
+}

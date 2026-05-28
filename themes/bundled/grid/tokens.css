@@ -1,0 +1,70 @@
+:root {
+  --background: #18181a;
+  --foreground: #c8c8c8;
+
+  --panel: #18181a;
+  --panel-secondary: #1f1f22;
+  --content-panel: #1a1a1d;
+  --card: #1f1f22;
+  --panel-active: #2a2a30;
+  --panel-hover: #242428;
+
+  --titlebar: #18181a;
+  --sidebar: #18181a;
+  --editor-secondary: #1f1f22;
+  --statusbar: #141416;
+  --statusbar-fg: #9a9aa3;
+
+  --text-primary: #e4e4e7;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --text-disabled: #52525b;
+  --text-active: #fafafa;
+
+  --border: #2e2e33;
+  --border-subtle: #27272a;
+  --border-focus: #3b82f6;
+
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+  --accent-fg: #fafafa;
+
+  --error: #f87171;
+  --warning: #fbbf24;
+  --success: #4ade80;
+  --info: #38bdf8;
+
+  --input-bg: #141416;
+  --input-border: #2e2e33;
+  --input-placeholder: #71717a;
+
+  --button-bg: #27272a;
+  --button-fg: #e4e4e7;
+  --button-hover: #3f3f46;
+  --button-secondary-bg: #1f1f22;
+  --button-secondary-fg: #c8c8c8;
+  --button-secondary-hover: #2a2a30;
+
+  --scrollbar: #27272a;
+  --scrollbar-hover: #3f3f46;
+
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+
+  --font-ui: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "Cascadia Mono", "Consolas", "JetBrains Mono", monospace;
+
+  --primary: #27272a;
+  --primary-hover: #3f3f46;
+  --toolbar-bg: #1f1f22;
+  --mod-enabled: #22c55e;
+  --mod-enabled-hover: #16a34a;
+  --table-header: #1f1f22;
+  --table-row-hover: #242428;
+
+  --nav-width: 240px;
+
+  --transition-fast: 0ms;
+  --transition-base: 0ms;
+}
