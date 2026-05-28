@@ -4,12 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 use crate::deploy::manifest::{save_state, state_path, PersistedDeployState};
 use crate::deploy::requirements::{check_requirements, profile_mismatch_warnings};
-use crate::deploy::sync::{remove_orphan_redmod_folders, sync_deployment, undeploy_mod_targets};
+use crate::deploy::sync::{
+    remove_orphan_per_mod_folders, remove_orphan_redmod_folders, sync_deployment,
+    undeploy_mod_targets,
+};
 use crate::deploy::targets::{compute_desired_targets, ordered_enabled_ids};
 use crate::deploy::verify::{verify_manifest, DeployReport};
 use crate::diagnostics::ModManifest;
 use crate::errors::{AppError, AppResult};
-use crate::games::{generic_profile, profile_by_id, GameProfile};
+use crate::games::{generic_profile, mod_path_for_type, profile_by_id, GameProfile, MergeMode};
 use crate::hardlink::check_same_partition;
 use crate::install::normalize_mod;
 use serde::{Deserialize, Serialize};
@@ -185,6 +188,36 @@ fn run_post_deploy_hooks(
     if profile.id == "baldursgate3" {
         let pak_names = bg3_pak_names(request, staging, profile);
         crate::bg3::sync_modsettings(&pak_names)?;
+    }
+
+    if profile.merge_mode == MergeMode::PerModFolder {
+        let deploy_root = mod_path_for_type(
+            &game_root.to_path_buf(),
+            profile.default_mod_type(),
+            &profile.id,
+        );
+        let desired: HashSet<String> = request
+            .mods
+            .iter()
+            .filter(|m| request.enabled_ids.contains(&m.id) && !m.files.is_empty())
+            .filter_map(|m| {
+                let slug = mod_slug_from_files(&m.files);
+                let normalized = normalize_mod(
+                    staging,
+                    &m.id,
+                    &slug,
+                    &m.files,
+                    profile,
+                    request.deploy_path_override.as_deref(),
+                );
+                normalized
+                    .files
+                    .first()
+                    .and_then(|f| f.deploy_rel.split('/').next())
+                    .map(|s| s.to_string())
+            })
+            .collect();
+        remove_orphan_per_mod_folders(&deploy_root, &desired)?;
     }
 
     if profile.supports_plugins {

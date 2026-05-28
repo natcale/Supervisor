@@ -12,7 +12,7 @@ use crate::hardlink::{remove_managed_link, same_file};
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
-pub fn remove_targets(targets: &[ManifestTarget]) -> AppResult<usize> {
+pub(crate) fn remove_targets(targets: &[ManifestTarget]) -> AppResult<usize> {
     let mut removed = 0usize;
     for target in targets {
         if remove_single_target(target, None)? {
@@ -70,6 +70,14 @@ fn cleanup_empty_parents(path: &Path) {
     }
 }
 
+/// Remove every manifest target using the same rules as single-mod undeploy (staging-aware).
+pub(crate) fn remove_all_deployed_targets(
+    targets: &[ManifestTarget],
+    staging_path: &str,
+) -> AppResult<usize> {
+    remove_targets_for_mod_removal(targets, staging_path)
+}
+
 fn remove_targets_for_mod_removal(
     targets: &[ManifestTarget],
     staging_path: &str,
@@ -83,6 +91,29 @@ fn remove_targets_for_mod_removal(
         cleanup_empty_parents(&target_path(target));
     }
     Ok(removed)
+}
+
+pub(crate) fn cleanup_per_mod_folders_from_targets(targets: &[ManifestTarget]) {
+    let mut by_root: HashMap<String, HashSet<String>> = HashMap::new();
+    for target in targets {
+        let Some(folder) = target.rel_path.split('/').next().filter(|s| !s.is_empty()) else {
+            continue;
+        };
+        by_root
+            .entry(target.deploy_root.clone())
+            .or_default()
+            .insert(folder.to_string());
+    }
+
+    for (deploy_root, folders) in by_root {
+        for folder in folders {
+            let path = Path::new(&deploy_root).join(&folder);
+            if path.is_dir() {
+                let _ = std::fs::remove_dir_all(&path);
+                cleanup_empty_parents(&path);
+            }
+        }
+    }
 }
 
 pub fn sync_deployment(
@@ -166,6 +197,7 @@ pub fn undeploy_mod_targets(app_data: &Path, game_id: &str, mod_id: &str) -> App
         .into_iter()
         .partition(|t| t.mod_id == mod_id);
     let removed = remove_targets_for_mod_removal(&remove, &staging_path)?;
+    cleanup_per_mod_folders_from_targets(&remove);
     manifest.targets = keep;
     write_manifest(&path, &manifest)?;
 
@@ -202,6 +234,7 @@ pub fn prune_deploy_manifest(
     }
 
     remove_targets_for_mod_removal(&stale, &staging_path)?;
+    cleanup_per_mod_folders_from_targets(&stale);
     manifest.targets = keep;
     write_manifest(&path, &manifest)?;
 
@@ -219,11 +252,22 @@ pub fn remove_orphan_redmod_folders(
     game_root: &Path,
     desired_slugs: &HashSet<String>,
 ) -> AppResult<()> {
-    let mods_dir = game_root.join("mods");
-    if !mods_dir.is_dir() {
+    remove_orphan_child_folders(&game_root.join("mods"), desired_slugs)
+}
+
+/// Remove per-mod folders under a deploy root that are no longer in the active set.
+pub fn remove_orphan_per_mod_folders(
+    deploy_root: &Path,
+    desired_folders: &HashSet<String>,
+) -> AppResult<()> {
+    remove_orphan_child_folders(deploy_root, desired_folders)
+}
+
+fn remove_orphan_child_folders(parent: &Path, desired: &HashSet<String>) -> AppResult<()> {
+    if !parent.is_dir() {
         return Ok(());
     }
-    let entries = std::fs::read_dir(&mods_dir).map_err(AppError::Io)?;
+    let entries = std::fs::read_dir(parent).map_err(AppError::Io)?;
     for entry in entries.flatten() {
         let path = entry.path();
         if !path.is_dir() {
@@ -232,7 +276,7 @@ pub fn remove_orphan_redmod_folders(
         let Some(name) = path.file_name().and_then(|n| n.to_str()) else {
             continue;
         };
-        if desired_slugs.contains(name) {
+        if desired.contains(name) {
             continue;
         }
         let _ = std::fs::remove_dir_all(&path);

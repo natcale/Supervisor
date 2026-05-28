@@ -55,16 +55,19 @@ pub fn normalize_mod(
     let stripped = strip_slug_prefix(files, slug);
     let mod_type = detect_mod_type(staging, slug, &stripped, profile);
     let mod_root = staging.join(slug);
-    let inner = strip_known_wrappers(&stripped, &mod_type, profile);
-
     let mut normalized_files = Vec::new();
-    for (rel, _original) in inner {
-        let source = format!("{slug}/{rel}");
+    for storage_rel in &stripped {
+        let rel = strip_known_wrappers(std::slice::from_ref(storage_rel), &mod_type, profile)
+            .into_iter()
+            .next()
+            .map(|(r, _)| r)
+            .unwrap_or_else(|| storage_rel.clone());
+        let source = format!("{slug}/{storage_rel}");
         let file_type = route_file_mod_type(profile, &mod_type, &mod_root, &rel);
         let mod_type_def = profile
             .mod_type(&file_type)
             .unwrap_or_else(|| profile.default_mod_type());
-        let deploy_rel = compute_deploy_rel(profile, mod_type_def, slug, &rel);
+        let deploy_rel = compute_deploy_rel(profile, mod_type_def, &mod_root, slug, &rel);
         let is_root = is_game_root_basename_deploy(&file_type);
 
         normalized_files.push(NormalizedFile {
@@ -86,9 +89,79 @@ fn is_game_root_basename_deploy(mod_type: &str) -> bool {
     matches!(mod_type, "dinput" | "doorstop" | "bg3_se" | "root")
 }
 
+/// Folder name under a per-mod deploy root (e.g. KCD `Mods/<this>/`).
+pub fn per_mod_deploy_folder(mod_root: &Path, slug: &str) -> String {
+    if let Some(id) = read_manifest_id(mod_root) {
+        return id;
+    }
+    if let Some(id) = find_manifest_id_in_tree(mod_root, 4) {
+        return id;
+    }
+
+    if let Ok(entries) = std::fs::read_dir(mod_root) {
+        let dirs: Vec<_> = entries
+            .filter_map(|e| e.ok())
+            .filter(|e| e.path().is_dir())
+            .collect();
+        if dirs.len() == 1 {
+            let child = dirs[0].path();
+            if child.join("manifest.json").is_file() {
+                if let Some(name) = child.file_name().and_then(|n| n.to_str()) {
+                    return name.to_string();
+                }
+            }
+        }
+    }
+
+    slug.to_string()
+}
+
+fn find_manifest_id_in_tree(root: &Path, max_depth: u32) -> Option<String> {
+    if max_depth == 0 {
+        return None;
+    }
+    if let Some(id) = read_manifest_id(root) {
+        return Some(id);
+    }
+    let entries = std::fs::read_dir(root).ok()?;
+    for entry in entries.flatten() {
+        if entry.path().is_dir() {
+            if let Some(id) = find_manifest_id_in_tree(&entry.path(), max_depth.saturating_sub(1)) {
+                return Some(id);
+            }
+        }
+    }
+    None
+}
+
+fn read_manifest_id(mod_root: &Path) -> Option<String> {
+    let manifest = mod_root.join("manifest.json");
+    if !manifest.is_file() {
+        return None;
+    }
+    let content = std::fs::read_to_string(&manifest).ok()?;
+    let value: serde_json::Value = serde_json::from_str(&content).ok()?;
+    value
+        .get("id")
+        .and_then(|id| id.as_str())
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+}
+
+fn strip_redundant_per_mod_prefix(rel: &str, slug: &str, mod_folder: &str) -> String {
+    let mut path = rel.replace('\\', "/");
+    for prefix in [format!("{slug}/"), format!("{mod_folder}/")] {
+        if let Some(rest) = path.strip_prefix(&prefix) {
+            path = rest.to_string();
+        }
+    }
+    path.trim_start_matches('/').to_string()
+}
+
 fn compute_deploy_rel(
     profile: &GameProfile,
     mod_type: &ModTypeDef,
+    mod_root: &Path,
     slug: &str,
     rel: &str,
 ) -> String {
@@ -100,11 +173,12 @@ fn compute_deploy_rel(
     }
 
     if profile.merge_mode == MergeMode::PerModFolder {
-        let folder = slug;
-        if rel.is_empty() {
-            return folder.to_string();
+        let mod_folder = per_mod_deploy_folder(mod_root, slug);
+        let inner = strip_redundant_per_mod_prefix(rel, slug, &mod_folder);
+        if inner.is_empty() {
+            return mod_folder;
         }
-        return format!("{folder}/{rel}");
+        return format!("{mod_folder}/{inner}");
     }
 
     if mod_type.id == "default" && mod_type.rel_path.eq_ignore_ascii_case("data") {
@@ -145,7 +219,6 @@ fn strip_known_wrappers(
         "bepinex" => &["BepInEx/plugins/", "BepInEx/"],
         "bepinex_tree" | "doorstop" => &[],
         "qmod" => &["QMods/"],
-        "smf" => &["Simple Mod Framework/Mods/"],
         "win64" => &["Binaries/Win64/"],
         "pak" => &["Content/Paks/~mods/"],
         _ => &[],
@@ -272,12 +345,6 @@ fn detect_mod_type(
             .any(|p| p.starts_with("Data/") || p.starts_with("data/"))
         {
             return "bg3_loose".into();
-        }
-    }
-
-    if mod_root.join("manifest.json").is_file() {
-        if profile.mod_type("smf").is_some() {
-            return "smf".into();
         }
     }
 
@@ -436,6 +503,36 @@ mod tests {
             .collect();
         assert!(types.contains(&"pak"));
         assert!(types.contains(&"win64"));
+        let _ = fs::remove_dir_all(&staging);
+    }
+
+    #[test]
+    fn kcd_per_mod_deploys_under_manifest_id_not_archive_slug() {
+        let profile = profile_by_id("kingdomcomdeliverance").expect("kingdomcomdeliverance");
+        let staging = test_staging();
+        let slug = "cool-armor-download";
+        let mod_root = staging.join(slug);
+        fs::create_dir_all(&mod_root).unwrap();
+        fs::write(
+            mod_root.join("manifest.json"),
+            r#"{"id":"Author.CoolArmor","name":"Cool Armor"}"#,
+        )
+        .unwrap();
+        fs::write(mod_root.join("supervisor.cfg"), b"cfg").unwrap();
+
+        let files = vec![
+            format!("{slug}/manifest.json"),
+            format!("{slug}/supervisor.cfg"),
+        ];
+        let normalized = normalize_mod(&staging, "mod-kcd", slug, &files, profile, None);
+
+        let paths: Vec<_> = normalized
+            .files
+            .iter()
+            .map(|f| f.deploy_rel.replace('\\', "/"))
+            .collect();
+        assert!(paths.iter().all(|p| p.starts_with("Author.CoolArmor/")));
+        assert!(!paths.iter().any(|p| p.starts_with("cool-armor-download/")));
         let _ = fs::remove_dir_all(&staging);
     }
 
