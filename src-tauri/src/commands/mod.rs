@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 //! Tauri command handlers — thin presentation layer over domain modules.
 
+mod about;
 mod collections;
 mod deploy;
 pub mod downloads;
@@ -15,6 +16,7 @@ mod plugins;
 mod settings;
 mod themes;
 
+pub use about::*;
 pub use collections::*;
 pub use deploy::*;
 pub use downloads::*;
